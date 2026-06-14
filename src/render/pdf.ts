@@ -1,6 +1,10 @@
 import PDFDocument from "pdfkit";
 import SVGtoPDF from "svg-to-pdfkit";
-import { renderDiagramSvg } from "../diagram/index.js";
+import {
+  type MermaidRenderer,
+  renderDiagramSvg,
+  renderMermaidSvg,
+} from "../diagram/index.js";
 import type { Block, SlideDeck, VAnchor } from "../ir/index.js";
 import { resolveDeck } from "../layout/index.js";
 import { getTheme, type ThemeTokens } from "../theme/index.js";
@@ -22,6 +26,33 @@ export interface PdfOptions {
    * Latin-only PDF fonts are used.
    */
   fonts?: PdfFonts;
+  /**
+   * Render mermaid diagrams to embedded SVG. `true` uses the built-in headless
+   * renderer; a function supplies a custom mermaid→SVG renderer. When omitted,
+   * mermaid diagrams fall back to their source text.
+   */
+  mermaid?: boolean | MermaidRenderer;
+}
+
+/** Pre-render every mermaid source in the deck to SVG (keyed by source). */
+async function prerenderMermaid(
+  deck: SlideDeck,
+  mermaid: PdfOptions["mermaid"],
+): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  if (!mermaid) return out;
+  const renderer: MermaidRenderer =
+    typeof mermaid === "function" ? mermaid : renderMermaidSvg;
+  for (const slide of deck.slides) {
+    for (const block of slide.blocks) {
+      if (block.type === "diagram" && block.kind === "mermaid") {
+        if (!out.has(block.source)) {
+          out.set(block.source, await renderer(block.source));
+        }
+      }
+    }
+  }
+  return out;
 }
 
 interface ResolvedFonts {
@@ -73,6 +104,7 @@ function drawBlock(
   isTitleLayout: boolean,
   t: ThemeTokens,
   f: ResolvedFonts,
+  mermaidSvgs: Map<string, string>,
 ): void {
   switch (block.type) {
     case "text":
@@ -156,12 +188,23 @@ function drawBlock(
         SVGtoPDF(doc, svg, box.x, box.y, { width: box.w, height: box.h });
         return;
       }
-      // Mermaid → SVG is a follow-up; preserve the source text for now.
-      drawText(doc, `[mermaid diagram]\n${block.source}`, box, {
-        font: f.mono,
-        size: 12,
-        color: t.color.muted,
-      });
+      {
+        const svg = mermaidSvgs.get(block.source);
+        if (svg) {
+          SVGtoPDF(doc, svg, box.x, box.y, {
+            width: box.w,
+            height: box.h,
+            preserveAspectRatio: "xMidYMid meet",
+          });
+          return;
+        }
+        // No mermaid renderer enabled — preserve the source text.
+        drawText(doc, `[mermaid diagram]\n${block.source}`, box, {
+          font: f.mono,
+          size: 12,
+          color: t.color.muted,
+        });
+      }
       return;
   }
 }
@@ -171,9 +214,14 @@ function drawBlock(
  * resolved coordinates (path A) as real text, sharing the normalized coordinate
  * template with the pptx renderer. Embedded fonts are subset automatically.
  */
-export function renderPdf(deck: SlideDeck, opts?: PdfOptions): Promise<Buffer> {
+export async function renderPdf(
+  deck: SlideDeck,
+  opts?: PdfOptions,
+): Promise<Buffer> {
   const t = getTheme(deck.theme);
   const canvas: Size = canvasPt(deck.aspect);
+  // Mermaid rendering is async, so resolve all diagrams before drawing.
+  const mermaidSvgs = await prerenderMermaid(deck, opts?.mermaid);
   const doc = new PDFDocument({ size: [canvas.w, canvas.h], margin: 0, autoFirstPage: false });
   const f = setupFonts(doc, opts?.fonts);
 
@@ -198,6 +246,7 @@ export function renderPdf(deck: SlideDeck, opts?: PdfOptions): Promise<Buffer> {
         isTitleLayout,
         t,
         f,
+        mermaidSvgs,
       );
     }
   }
