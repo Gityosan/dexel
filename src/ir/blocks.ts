@@ -107,3 +107,6 @@ export const Block = z.discriminatedUnion("type", [
 ]);
 
 export type Block = z.infer<typeof Block>;
+
+/** Block as accepted *before* schema defaults are applied (for authoring APIs). */
+export type BlockInput = z.input<typeof Block>;
