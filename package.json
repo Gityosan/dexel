@@ -46,6 +46,7 @@
     "@typescript-eslint/parser": "8.59.4",
     "eslint": "10.0.3",
     "fast-check": "4.8.0",
+    "jszip": "^3.10.1",
     "prettier": "3.8.1",
     "publint": "0.3.21",
     "tsdown": "0.22.0",

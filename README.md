@@ -26,15 +26,16 @@ Early but end-to-end for the MVP core. Implemented:
   reports overflow.
 - **Renderers** — Markdown, HTML (Google Doc paste), pptx (native text frames),
   and pdf (real text at coordinates, with **Japanese font embedding + subsetting**).
-- **Diagrams** — shared SVG renderer for structured patterns (flow, matrix-2x2,
-  generic fallback), embedded in pdf (vector) and md (inline).
+- **Diagrams** — shared normalized layout for structured patterns (flow,
+  matrix-2x2, generic fallback): SVG for pdf (vector) and md (inline), and
+  **native PowerPoint shapes** (rounded rects + connector lines) for pptx.
 - **Themes** — 5 built-in token sets.
 - **Builder session** — stateful `createDeck` / `addSection` / `render`, echoing
   a deck summary with selectable pattern hints on every step.
 
-Not yet implemented: native **pptx diagram shapes** (currently text placeholder),
-**mermaid** rendering, the **MCP server** transport (the builder core is done —
-only the wire protocol is left), and Tier-3 / technical layouts.
+Not yet implemented: **mermaid** rendering, the **MCP server** transport (the
+builder core is done — only the wire protocol is left), and Tier-3 / technical
+layouts.
 
 ## The IR
 
@@ -122,8 +123,8 @@ const pdf = await deck.renderToBuffer("pdf", {
 4. Layout engine (pattern → normalized coordinates, 16:9 / 4:3) — **done.**
 5. pptx / pdf renderers (shared coordinate template, real text) — **done.**
 6. md / html renderers (flowOrder demotion) — **done.**
-7. Structured diagrams (SVG + pptx shapes) — **SVG done** (md/pdf); pptx native
-   shapes pending.
+7. Structured diagrams (SVG + pptx shapes) — **done** (md/pdf SVG + pptx native
+   shapes).
 8. Mermaid diagrams (SVG / PNG).
 9. Theme (token) system — **done** (minimal token set).
 10. MCP builder session (`create_deck` / `add_section` / `render`) — **core done**

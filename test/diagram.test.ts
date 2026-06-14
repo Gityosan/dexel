@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { Block, renderDiagramSvg, type StructuredDiagram } from "../src/index.js";
+import {
+  Block,
+  type DiagBox,
+  layoutDiagram,
+  renderDiagramSvg,
+  type StructuredDiagram,
+} from "../src/index.js";
 
 function diagram(over: Partial<StructuredDiagram>): StructuredDiagram {
   return Block.parse({
@@ -57,5 +63,40 @@ describe("renderDiagramSvg", () => {
   it("honors a custom size", () => {
     const svg = renderDiagramSvg(diagram({}), { width: 400, height: 200 });
     expect(svg).toContain('viewBox="0 0 400 200"');
+  });
+});
+
+describe("layoutDiagram (shared geometry)", () => {
+  it("lays flow nodes as boxes with arrows, all within the unit area", () => {
+    const shapes = layoutDiagram(diagram({}));
+    const boxes = shapes.filter((s) => s.kind === "box");
+    const lines = shapes.filter((s) => s.kind === "line");
+    expect(boxes).toHaveLength(2);
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatchObject({ arrow: true });
+    for (const b of boxes as DiagBox[]) {
+      expect(b.x).toBeGreaterThanOrEqual(0);
+      expect(b.x + b.w).toBeLessThanOrEqual(1);
+      expect(b.y + b.h).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it("lays matrix-2x2 as two axis lines (no arrows) plus four cells", () => {
+    const shapes = layoutDiagram(
+      diagram({
+        pattern: "matrix-2x2",
+        nodes: [
+          { id: "1", label: "Q1" },
+          { id: "2", label: "Q2" },
+          { id: "3", label: "Q3" },
+          { id: "4", label: "Q4" },
+        ],
+        edges: [],
+      }),
+    );
+    expect(shapes.filter((s) => s.kind === "box")).toHaveLength(4);
+    const lines = shapes.filter((s) => s.kind === "line");
+    expect(lines).toHaveLength(2);
+    expect(lines.every((l) => l.kind === "line" && !l.arrow)).toBe(true);
   });
 });
