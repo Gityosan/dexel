@@ -98,6 +98,7 @@ export function createMcpServer(): McpServer {
           return jsonResult(session.render(target as TextTarget));
         }
         const buf = await session.renderToBuffer(target as BinaryTarget, {
+          pptx: { mermaid },
           pdf: { mermaid },
         });
         return jsonResult(buf.toString("base64"));

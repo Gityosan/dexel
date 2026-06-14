@@ -1,9 +1,9 @@
 import PDFDocument from "pdfkit";
 import SVGtoPDF from "svg-to-pdfkit";
 import {
-  type MermaidRenderer,
+  type MermaidOption,
+  prerenderMermaid,
   renderDiagramSvg,
-  renderMermaidSvg,
 } from "../diagram/index.js";
 import type { Block, SlideDeck, VAnchor } from "../ir/index.js";
 import { resolveDeck } from "../layout/index.js";
@@ -31,28 +31,7 @@ export interface PdfOptions {
    * renderer; a function supplies a custom mermaid→SVG renderer. When omitted,
    * mermaid diagrams fall back to their source text.
    */
-  mermaid?: boolean | MermaidRenderer;
-}
-
-/** Pre-render every mermaid source in the deck to SVG (keyed by source). */
-async function prerenderMermaid(
-  deck: SlideDeck,
-  mermaid: PdfOptions["mermaid"],
-): Promise<Map<string, string>> {
-  const out = new Map<string, string>();
-  if (!mermaid) return out;
-  const renderer: MermaidRenderer =
-    typeof mermaid === "function" ? mermaid : renderMermaidSvg;
-  for (const slide of deck.slides) {
-    for (const block of slide.blocks) {
-      if (block.type === "diagram" && block.kind === "mermaid") {
-        if (!out.has(block.source)) {
-          out.set(block.source, await renderer(block.source));
-        }
-      }
-    }
-  }
-  return out;
+  mermaid?: MermaidOption;
 }
 
 interface ResolvedFonts {

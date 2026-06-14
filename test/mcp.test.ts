@@ -47,7 +47,7 @@ describe("dexel MCP server", () => {
     const addSection = tools.find((t) => t.name === "add_section")!;
     const layout = (
       addSection.inputSchema.properties as Record<string, { enum?: string[] }>
-    ).layout;
+    ).layout!;
     expect(layout.enum).toContain("title");
     expect(layout.enum).toContain("two-column");
   });

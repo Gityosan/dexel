@@ -29,8 +29,9 @@ Early but end-to-end for the MVP core. Implemented:
 - **Diagrams** — shared normalized layout for structured patterns (flow,
   matrix-2x2, generic fallback): SVG for pdf (vector) and md (inline), and
   **native PowerPoint shapes** (rounded rects + connector lines) for pptx.
-  **Mermaid** renders headlessly (jsdom) to SVG, embedded as vector in pdf;
-  md/html keep native mermaid fences/blocks.
+  **Mermaid** renders headlessly (jsdom) to SVG, embedded as vector in pdf and as
+  a native SVG image in pptx (no rasterizer); md/html keep native mermaid
+  fences/blocks.
 - **Themes** — 5 built-in token sets.
 - **Builder session** — stateful `createDeck` / `addSection` / `render`, echoing
   a deck summary with selectable pattern hints on every step.
@@ -38,8 +39,7 @@ Early but end-to-end for the MVP core. Implemented:
   `render`, `export_deck_json`, `import_deck_json`) over stdio, with layout
   patterns surfaced as enums. Importable at `dexel/mcp`; runnable as `dexel-mcp`.
 
-Not yet implemented: mermaid PNG-embedding for pptx (pptx mermaid is currently a
-text placeholder). The MVP implementation order (below) is otherwise complete.
+The MVP implementation order (below) is complete.
 
 ## The IR
 
@@ -146,8 +146,8 @@ re-states the deck summary + pattern slots every call) → `render`, plus
 6. md / html renderers (flowOrder demotion) — **done.**
 7. Structured diagrams (SVG + pptx shapes) — **done** (md/pdf SVG + pptx native
    shapes).
-8. Mermaid diagrams (SVG / PNG) — **done** for md/html (native) and pdf (headless
-   SVG embed); pptx PNG-embed pending.
+8. Mermaid diagrams (SVG / PNG) — **done** for md/html (native), pdf (headless
+   SVG embed), and pptx (native SVG image embed).
 9. Theme (token) system — **done** (minimal token set).
 10. MCP builder session (`create_deck` / `add_section` / `render`) — **done**
     (stdio server + tools).

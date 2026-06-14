@@ -79,4 +79,43 @@ describe("renderPptx", () => {
     expect(xml).toContain("<a:t>Alpha</a:t>");
     expect(xml).toContain("<a:t>Beta</a:t>");
   });
+
+  it("embeds mermaid diagrams as SVG images when enabled", async () => {
+    const deck = SlideDeck.parse({
+      slides: [
+        {
+          layout: "title-content",
+          blocks: [
+            { type: "text", variant: "heading", text: "M" },
+            {
+              type: "diagram",
+              kind: "mermaid",
+              slot: "body",
+              source: "graph TD; A-->B;",
+            },
+          ],
+        },
+      ],
+    });
+
+    // With a custom renderer (fast, deterministic) the SVG is embedded.
+    const buf = await renderPptx(deck, {
+      mermaid: async () =>
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10"/></svg>',
+    });
+    const zip = await JSZip.loadAsync(buf);
+    const svgMedia = Object.keys(zip.files).filter((f) =>
+      /ppt\/media\/.*\.svg$/.test(f),
+    );
+    expect(svgMedia.length).toBe(1);
+    const xml = await slideXml(buf);
+    expect(xml).toContain("svgBlip");
+
+    // Without the option, it falls back to a text placeholder (no SVG media).
+    const plain = await renderPptx(deck);
+    const plainZip = await JSZip.loadAsync(plain);
+    expect(
+      Object.keys(plainZip.files).some((f) => /ppt\/media\/.*\.svg$/.test(f)),
+    ).toBe(false);
+  });
 });

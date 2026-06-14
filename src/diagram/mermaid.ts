@@ -6,9 +6,13 @@
  * are real SVG `<text>` (no `<foreignObject>`), which keeps the output embeddable
  * by svg-to-pdfkit. The DOM + mermaid are initialized lazily and once.
  */
+import type { SlideDeck } from "../ir/index.js";
 
 /** Renders mermaid source to an SVG string. */
 export type MermaidRenderer = (source: string) => Promise<string>;
+
+/** How a renderer should handle mermaid: off, the built-in, or a custom renderer. */
+export type MermaidOption = boolean | MermaidRenderer;
 
 type MermaidModule = {
   initialize: (config: Record<string, unknown>) => void;
@@ -82,3 +86,30 @@ export const renderMermaidSvg: MermaidRenderer = async (source) => {
   const { svg } = await mermaid.render(`dexel-mermaid-${counter++}`, source);
   return svg;
 };
+
+/**
+ * Pre-render every mermaid source in a deck to SVG (keyed by source). Renderers
+ * are synchronous once drawing, so mermaid must be resolved up front. Returns an
+ * empty map when mermaid is disabled.
+ */
+export async function prerenderMermaid(
+  deck: SlideDeck,
+  option: MermaidOption | undefined,
+): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  if (!option) return out;
+  const renderer: MermaidRenderer =
+    typeof option === "function" ? option : renderMermaidSvg;
+  for (const slide of deck.slides) {
+    for (const block of slide.blocks) {
+      if (
+        block.type === "diagram" &&
+        block.kind === "mermaid" &&
+        !out.has(block.source)
+      ) {
+        out.set(block.source, await renderer(block.source));
+      }
+    }
+  }
+  return out;
+}

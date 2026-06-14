@@ -2,7 +2,7 @@ import type { SlideDeck } from "../ir/index.js";
 import { renderHtml } from "./html.js";
 import { renderMarkdown } from "./markdown.js";
 import { renderPdf, type PdfOptions } from "./pdf.js";
-import { renderPptx } from "./pptx.js";
+import { renderPptx, type PptxOptions } from "./pptx.js";
 
 export * from "./markdown.js";
 export * from "./html.js";
@@ -27,7 +27,9 @@ export function render(deck: SlideDeck, target: TextTarget): string {
 }
 
 export interface RenderOptions {
-  /** Options forwarded to the pdf renderer (e.g. font embedding). */
+  /** Options forwarded to the pptx renderer (e.g. mermaid embedding). */
+  pptx?: PptxOptions;
+  /** Options forwarded to the pdf renderer (e.g. font embedding, mermaid). */
   pdf?: PdfOptions;
 }
 
@@ -39,7 +41,7 @@ export function renderToBuffer(
 ): Promise<Buffer> {
   switch (target) {
     case "pptx":
-      return renderPptx(deck);
+      return renderPptx(deck, opts?.pptx);
     case "pdf":
       return renderPdf(deck, opts?.pdf);
   }

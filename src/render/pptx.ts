@@ -8,7 +8,11 @@ type PptxCtor = (typeof pptxgen)["default"];
 type PptxInstance = InstanceType<PptxCtor>;
 type PptxSlide = ReturnType<PptxInstance["addSlide"]>;
 const Pptx = pptxgen as unknown as PptxCtor;
-import { layoutDiagram } from "../diagram/index.js";
+import {
+  layoutDiagram,
+  type MermaidOption,
+  prerenderMermaid,
+} from "../diagram/index.js";
 import { resolveDeck } from "../layout/index.js";
 import { bareHex, getTheme, type ThemeTokens } from "../theme/index.js";
 
@@ -88,6 +92,7 @@ function addBlock(
   isTitleLayout: boolean,
   t: ThemeTokens,
   shapes: PptxShapes,
+  mermaidSvgs: Map<string, string>,
 ): void {
   const fg = bareHex(t.color.fg);
   const accent = bareHex(t.color.accent);
@@ -171,16 +176,38 @@ function addBlock(
         drawStructuredDiagram(slide, block, rect, t, shapes);
         return;
       }
-      // Mermaid → image-embed is a follow-up; preserve the source text for now.
-      slide.addText(`[mermaid diagram]\n${block.source}`, {
-        ...p,
-        valign: "top",
-        fontSize: 14,
-        color: muted,
-        fontFace: t.font.mono,
-      });
+      {
+        const svg = mermaidSvgs.get(block.source);
+        if (svg) {
+          // PowerPoint 2016+ renders embedded SVG natively (asvg:svgBlip);
+          // pptxgenjs handles the OOXML wiring. No rasterizer needed.
+          slide.addImage({
+            ...p,
+            data: `image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`,
+          });
+          return;
+        }
+        // No mermaid renderer enabled — preserve the source text.
+        slide.addText(`[mermaid diagram]\n${block.source}`, {
+          ...p,
+          valign: "top",
+          fontSize: 14,
+          color: muted,
+          fontFace: t.font.mono,
+        });
+      }
       return;
   }
+}
+
+export interface PptxOptions {
+  /**
+   * Render mermaid diagrams and embed them as SVG images (PowerPoint 2016+
+   * renders SVG natively). `true` uses the built-in headless renderer; a function
+   * supplies a custom mermaid→SVG renderer. When omitted, mermaid diagrams fall
+   * back to their source text.
+   */
+  mermaid?: MermaidOption;
 }
 
 /**
@@ -188,8 +215,12 @@ function addBlock(
  * as native PowerPoint text frames; the shared normalized coordinate template is
  * mapped to percentage positions so it works for both 16:9 and 4:3.
  */
-export async function renderPptx(deck: SlideDeck): Promise<Buffer> {
+export async function renderPptx(
+  deck: SlideDeck,
+  opts?: PptxOptions,
+): Promise<Buffer> {
   const t = getTheme(deck.theme);
+  const mermaidSvgs = await prerenderMermaid(deck, opts?.mermaid);
   const pptx = new Pptx();
   pptx.layout = deck.aspect === "4:3" ? "LAYOUT_4x3" : "LAYOUT_WIDE";
   if (deck.meta?.title) pptx.title = deck.meta.title;
@@ -211,6 +242,7 @@ export async function renderPptx(deck: SlideDeck): Promise<Buffer> {
         isTitleLayout,
         t,
         shapes,
+        mermaidSvgs,
       );
     }
   }
