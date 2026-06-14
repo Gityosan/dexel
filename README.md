@@ -34,10 +34,12 @@ Early but end-to-end for the MVP core. Implemented:
 - **Themes** — 5 built-in token sets.
 - **Builder session** — stateful `createDeck` / `addSection` / `render`, echoing
   a deck summary with selectable pattern hints on every step.
+- **MCP server** — the builder exposed as tools (`create_deck`, `add_section`,
+  `render`, `export_deck_json`, `import_deck_json`) over stdio, with layout
+  patterns surfaced as enums. Importable at `dexel/mcp`; runnable as `dexel-mcp`.
 
-Not yet implemented: the **MCP server** transport (the builder core is done —
-only the wire protocol is left), and mermaid PNG-embedding for pptx (pptx mermaid
-is currently a text placeholder).
+Not yet implemented: mermaid PNG-embedding for pptx (pptx mermaid is currently a
+text placeholder). The MVP implementation order (below) is otherwise complete.
 
 ## The IR
 
@@ -91,9 +93,10 @@ npm run check     # publint
 
 ## Tech stack
 
-TypeScript · Zod v4 (IR) · tsdown (build) · vitest + fast-check (tests) ·
-eslint + prettier. Planned: pptxgenjs, pdfkit + fontkit (JP font subsetting),
-mermaid, citty (CLI), and the MCP SDK.
+TypeScript · Zod v4 (IR) · pptxgenjs (pptx) · pdfkit + fontkit + svg-to-pdfkit
+(pdf, JP font subsetting) · mermaid + jsdom (headless diagrams) ·
+@modelcontextprotocol/sdk (MCP) · tsdown (build) · vitest + fast-check (tests) ·
+eslint + prettier.
 
 ## Authoring with the builder
 
@@ -117,6 +120,22 @@ const pdf = await deck.renderToBuffer("pdf", {
 });
 ```
 
+## Driving it from an LLM (MCP)
+
+The same builder is exposed as an MCP server. Run `dexel-mcp` (stdio), or embed
+it:
+
+```ts
+import { createMcpServer } from "dexel/mcp";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+
+await createMcpServer().connect(new StdioServerTransport());
+```
+
+Tools: `create_deck` → `add_section` (layout chosen from an enum; the response
+re-states the deck summary + pattern slots every call) → `render`, plus
+`export_deck_json` / `import_deck_json`.
+
 ## Implementation order (from the design spec)
 
 1. Japanese font embedding (pdfkit + fontkit subsetting) — **done.**
@@ -130,6 +149,6 @@ const pdf = await deck.renderToBuffer("pdf", {
 8. Mermaid diagrams (SVG / PNG) — **done** for md/html (native) and pdf (headless
    SVG embed); pptx PNG-embed pending.
 9. Theme (token) system — **done** (minimal token set).
-10. MCP builder session (`create_deck` / `add_section` / `render`) — **core done**
-    (MCP transport pending).
+10. MCP builder session (`create_deck` / `add_section` / `render`) — **done**
+    (stdio server + tools).
 11. Tier 2 / Tier 3 / technical layout coverage — **done** (all 17 patterns).

@@ -9,11 +9,18 @@
     ".": {
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/server.d.mts",
+      "import": "./dist/mcp/server.mjs"
     }
   },
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
+  "bin": {
+    "dexel-mcp": "./dist/mcp/stdio.mjs"
+  },
   "files": [
     "dist"
   ],
@@ -28,6 +35,7 @@
     "check": "publint"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "c12": "4.0.0-beta.4",
     "citty": "0.2.2",
     "consola": "3.4.2",
