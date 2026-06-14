@@ -1,11 +1,14 @@
 import type { SlideDeck } from "../ir/index.js";
 import { renderHtml } from "./html.js";
 import { renderMarkdown } from "./markdown.js";
+import { renderPdf, type PdfOptions } from "./pdf.js";
 import { renderPptx } from "./pptx.js";
 
 export * from "./markdown.js";
 export * from "./html.js";
 export * from "./pptx.js";
+export * from "./pdf.js";
+export * from "./geometry.js";
 
 /** Text output targets (synchronous, return a string). */
 export type TextTarget = "md" | "html";
@@ -23,15 +26,21 @@ export function render(deck: SlideDeck, target: TextTarget): string {
   }
 }
 
+export interface RenderOptions {
+  /** Options forwarded to the pdf renderer (e.g. font embedding). */
+  pdf?: PdfOptions;
+}
+
 /** Render a deck to a binary target. */
 export function renderToBuffer(
   deck: SlideDeck,
   target: BinaryTarget,
+  opts?: RenderOptions,
 ): Promise<Buffer> {
   switch (target) {
     case "pptx":
       return renderPptx(deck);
     case "pdf":
-      throw new Error("Render target \"pdf\" is not implemented yet.");
+      return renderPdf(deck, opts?.pdf);
   }
 }
