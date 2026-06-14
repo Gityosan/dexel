@@ -19,6 +19,7 @@
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "bin": {
+    "dexel": "./dist/cli/run.mjs",
     "dexel-mcp": "./dist/mcp/stdio.mjs"
   },
   "files": [

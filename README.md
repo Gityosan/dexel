@@ -38,6 +38,8 @@ Early but end-to-end for the MVP core. Implemented:
 - **MCP server** — the builder exposed as tools (`create_deck`, `add_section`,
   `render`, `export_deck_json`, `import_deck_json`) over stdio, with layout
   patterns surfaced as enums. Importable at `dexel/mcp`; runnable as `dexel-mcp`.
+- **CLI** — `dexel render <deck.json> -t <md|html|pptx|pdf> -o out`, plus
+  `dexel patterns` and `dexel mcp` (citty + consola).
 
 The MVP implementation order (below) is complete.
 
@@ -119,6 +121,19 @@ const pdf = await deck.renderToBuffer("pdf", {
   pdf: { fonts: { body: "/path/to/NotoSansJP.ttf" } },
 });
 ```
+
+## CLI
+
+```bash
+dexel render deck.json -t md                 # → stdout
+dexel render deck.json -t pptx -o deck.pptx  # binary targets need --out
+dexel render deck.json -t pdf  -o deck.pdf \
+  --mermaid --font-body /path/to/NotoSansJP.ttf
+dexel patterns                               # list layouts + their slots
+dexel mcp                                    # start the MCP server (stdio)
+```
+
+`render` reads the deck JSON from a file or `-` (stdin).
 
 ## Driving it from an LLM (MCP)
 
