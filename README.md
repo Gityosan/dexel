@@ -20,10 +20,10 @@ Two core values:
 Early but end-to-end for the MVP core. Implemented:
 
 - **IR** — Zod schemas for the whole deck.
-- **Layouts** — all Tier-1 (title, section-divider, title-content, two-column,
-  bullet-list) and Tier-2 (comparison, kpi-highlight, image-caption, quote,
-  agenda/toc) patterns, plus a **layout engine** that binds blocks to slots and
-  reports overflow.
+- **Layouts** — **all 17 `LayoutPattern`s** (Tier-1/2/3 + technical: e.g.
+  comparison, kpi-highlight, quote, timeline, process-steps, grid-cards,
+  full-bleed, code, code-explain), plus a **layout engine** that binds blocks to
+  slots and reports overflow.
 - **Renderers** — Markdown, HTML (Google Doc paste), pptx (native text frames),
   and pdf (real text at coordinates, with **Japanese font embedding + subsetting**).
 - **Diagrams** — shared normalized layout for structured patterns (flow,
@@ -33,9 +33,8 @@ Early but end-to-end for the MVP core. Implemented:
 - **Builder session** — stateful `createDeck` / `addSection` / `render`, echoing
   a deck summary with selectable pattern hints on every step.
 
-Not yet implemented: **mermaid** rendering, the **MCP server** transport (the
-builder core is done — only the wire protocol is left), and Tier-3 / technical
-layouts.
+Not yet implemented: **mermaid** rendering and the **MCP server** transport (the
+builder core is done — only the wire protocol is left).
 
 ## The IR
 
@@ -129,4 +128,4 @@ const pdf = await deck.renderToBuffer("pdf", {
 9. Theme (token) system — **done** (minimal token set).
 10. MCP builder session (`create_deck` / `add_section` / `render`) — **core done**
     (MCP transport pending).
-11. Tier 2 / Tier 3 / technical layout coverage — **Tier-2 done.**
+11. Tier 2 / Tier 3 / technical layout coverage — **done** (all 17 patterns).

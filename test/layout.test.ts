@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getLayoutTemplate,
+  LayoutPattern,
   resolveSlide,
   Slide,
   supportedLayouts,
@@ -19,8 +20,65 @@ describe("layout templates", () => {
     }
   });
 
-  it("throws a helpful error for an unimplemented pattern", () => {
-    expect(() => getLayoutTemplate("full-bleed")).toThrow(/not yet|Supported/i);
+  it("now has a template for every LayoutPattern in the IR", () => {
+    for (const pattern of LayoutPattern.options) {
+      expect(supportedLayouts).toContain(pattern);
+      expect(() => getLayoutTemplate(pattern)).not.toThrow();
+    }
+  });
+
+  it("throws a helpful error for an unknown pattern", () => {
+    expect(() =>
+      getLayoutTemplate("nope" as (typeof LayoutPattern.options)[number]),
+    ).toThrow(/Supported/i);
+  });
+
+  it("resolves Tier-3 grid-cards, full-bleed, and code-explain", () => {
+    const grid = resolveSlide(
+      Slide.parse({
+        layout: "grid-cards",
+        blocks: [
+          { type: "text", variant: "heading", text: "Cards" },
+          { type: "text", variant: "body", text: "1" },
+          { type: "text", variant: "body", text: "2" },
+          { type: "text", variant: "body", text: "3" },
+        ],
+      }),
+    );
+    expect(grid.placements.map((p) => p.slot.id)).toEqual([
+      "heading",
+      "c1",
+      "c2",
+      "c3",
+    ]);
+
+    // full-bleed draws the image first (background) then the heading overlay.
+    const bleed = resolveSlide(
+      Slide.parse({
+        layout: "full-bleed",
+        blocks: [
+          { type: "text", variant: "heading", text: "Overlay" },
+          { type: "image", src: "bg.png" },
+        ],
+      }),
+    );
+    expect(bleed.placements.map((p) => p.slot.id)).toEqual(["image", "heading"]);
+
+    const codeExplain = resolveSlide(
+      Slide.parse({
+        layout: "code-explain",
+        blocks: [
+          { type: "text", variant: "heading", text: "Snippet" },
+          { type: "code", language: "ts", code: "const x = 1;" },
+          { type: "text", variant: "body", text: "explanation" },
+        ],
+      }),
+    );
+    expect(codeExplain.placements.map((p) => p.slot.id)).toEqual([
+      "heading",
+      "code",
+      "explain",
+    ]);
   });
 
   it("resolves Tier-2 comparison and kpi-highlight layouts", () => {

@@ -179,6 +179,69 @@ export const layoutTemplates: Partial<Record<LayoutPattern, LayoutTemplate>> = {
     ],
     flowOrder: ["heading", "items"],
   }),
+
+  // Tier 3
+  timeline: define({
+    pattern: "timeline",
+    slots: [
+      { id: "heading", role: "heading", rect: { x: M, y: 0.08, w: 1 - 2 * M, h: 0.12 } },
+      { id: "timeline", role: "diagram", rect: { x: M, y: 0.3, w: 1 - 2 * M, h: 0.4 }, vAnchor: "center" },
+    ],
+    flowOrder: ["heading", "timeline"],
+  }),
+
+  "process-steps": define({
+    pattern: "process-steps",
+    slots: [
+      { id: "heading", role: "heading", rect: { x: M, y: 0.08, w: 1 - 2 * M, h: 0.12 } },
+      { id: "steps", role: "diagram", rect: { x: M, y: 0.32, w: 1 - 2 * M, h: 0.4 }, vAnchor: "center" },
+    ],
+    flowOrder: ["heading", "steps"],
+  }),
+
+  "grid-cards": define({
+    pattern: "grid-cards",
+    slots: [
+      { id: "heading", role: "heading", rect: { x: M, y: 0.08, w: 1 - 2 * M, h: 0.12 } },
+      { id: "c1", role: "body", rect: { x: 0.08, y: 0.26, w: 0.26, h: 0.31 } },
+      { id: "c2", role: "body", rect: { x: 0.37, y: 0.26, w: 0.26, h: 0.31 } },
+      { id: "c3", role: "body", rect: { x: 0.66, y: 0.26, w: 0.26, h: 0.31 } },
+      { id: "c4", role: "body", rect: { x: 0.08, y: 0.61, w: 0.26, h: 0.31 } },
+      { id: "c5", role: "body", rect: { x: 0.37, y: 0.61, w: 0.26, h: 0.31 } },
+      { id: "c6", role: "body", rect: { x: 0.66, y: 0.61, w: 0.26, h: 0.31 } },
+    ],
+    flowOrder: ["heading", "c1", "c2", "c3", "c4", "c5", "c6"],
+  }),
+
+  "full-bleed": define({
+    pattern: "full-bleed",
+    slots: [
+      { id: "image", role: "image", rect: { x: 0, y: 0, w: 1, h: 1 } },
+      { id: "heading", role: "heading", rect: { x: 0.08, y: 0.7, w: 0.84, h: 0.2 }, vAnchor: "bottom" },
+    ],
+    // Image first so it draws as the background, with the heading overlaid.
+    flowOrder: ["image", "heading"],
+  }),
+
+  // Technical
+  code: define({
+    pattern: "code",
+    slots: [
+      { id: "heading", role: "heading", rect: { x: M, y: 0.08, w: 1 - 2 * M, h: 0.12 } },
+      { id: "code", role: "code", rect: { x: M, y: 0.26, w: 1 - 2 * M, h: 0.66 } },
+    ],
+    flowOrder: ["heading", "code"],
+  }),
+
+  "code-explain": define({
+    pattern: "code-explain",
+    slots: [
+      { id: "heading", role: "heading", rect: { x: M, y: 0.08, w: 1 - 2 * M, h: 0.12 } },
+      { id: "code", role: "code", rect: { x: 0.08, y: 0.26, w: 0.48, h: 0.66 } },
+      { id: "explain", role: "body", rect: { x: 0.6, y: 0.26, w: 0.32, h: 0.66 } },
+    ],
+    flowOrder: ["heading", "code", "explain"],
+  }),
 };
 
 /** Layout patterns that currently have a concrete template (Tier-1). */
