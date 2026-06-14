@@ -96,9 +96,8 @@ describe("renderHtml", () => {
 });
 
 describe("render dispatch", () => {
-  it("routes md/html and rejects unimplemented targets", () => {
+  it("routes the text targets", () => {
     expect(render(deck, "md")).toBe(renderMarkdown(deck));
     expect(render(deck, "html")).toBe(renderHtml(deck));
-    expect(() => render(deck, "pptx")).toThrow(/not implemented/i);
   });
 });

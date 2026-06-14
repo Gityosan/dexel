@@ -33,11 +33,15 @@
     "consola": "3.4.2",
     "es-toolkit": "1.45.1",
     "log-update": "7.2.0",
+    "pdfkit": "^0.19.1",
+    "pptxgenjs": "^4.0.1",
+    "svg-to-pdfkit": "^0.1.8",
     "zod": "4.4.3"
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "5.10.0",
     "@types/node": "25.4.0",
+    "@types/pdfkit": "^0.17.6",
     "@typescript-eslint/eslint-plugin": "8.59.4",
     "@typescript-eslint/parser": "8.59.4",
     "eslint": "10.0.3",
