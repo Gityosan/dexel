@@ -1,5 +1,7 @@
+import { renderDiagramSvg } from "../diagram/index.js";
 import type { Block, SlideDeck } from "../ir/index.js";
 import { resolveDeck, type ResolvedSlide } from "../layout/index.js";
+import { getTheme, type ThemeTokens } from "../theme/index.js";
 
 /** Layouts whose heading is the top-level (h1) heading rather than a slide title. */
 const TOP_LEVEL_HEADING = new Set(["title", "section-divider"]);
@@ -8,7 +10,11 @@ function headingHashes(slide: ResolvedSlide): string {
   return TOP_LEVEL_HEADING.has(slide.layout) ? "#" : "##";
 }
 
-function blockToMarkdown(block: Block, slide: ResolvedSlide): string {
+function blockToMarkdown(
+  block: Block,
+  slide: ResolvedSlide,
+  theme: ThemeTokens,
+): string {
   switch (block.type) {
     case "text":
       switch (block.variant) {
@@ -41,15 +47,8 @@ function blockToMarkdown(block: Block, slide: ResolvedSlide): string {
       if (block.kind === "mermaid") {
         return `\`\`\`mermaid\n${block.source}\n\`\`\``;
       }
-      // Structured diagrams keep their text as a labeled list so no information
-      // is lost in the flow demotion.
-      return [
-        `**[diagram: ${block.pattern}]**`,
-        ...block.nodes.map((n) => `- ${n.label}`),
-        ...block.edges.map(
-          (e) => `- ${e.from} → ${e.to}${e.label ? ` (${e.label})` : ""}`,
-        ),
-      ].join("\n");
+      // Structured diagrams inline the shared SVG (Markdown allows raw HTML).
+      return renderDiagramSvg(block, { theme });
   }
 }
 
@@ -60,10 +59,11 @@ function blockToMarkdown(block: Block, slide: ResolvedSlide): string {
  */
 export function renderMarkdown(deck: SlideDeck): string {
   const slides = resolveDeck(deck);
+  const theme = getTheme(deck.theme);
   return slides
     .map((slide) =>
       slide.placements
-        .map((p) => blockToMarkdown(p.block, slide))
+        .map((p) => blockToMarkdown(p.block, slide, theme))
         .join("\n\n"),
     )
     .join("\n\n---\n\n")

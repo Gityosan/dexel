@@ -36,6 +36,33 @@ describe("renderPdf", () => {
     expect(isPdf(buf)).toBe(true);
   });
 
+  it("embeds a structured diagram as SVG vector graphics", async () => {
+    const deck = SlideDeck.parse({
+      slides: [
+        {
+          layout: "title-content",
+          blocks: [
+            { type: "text", variant: "heading", text: "Flow" },
+            {
+              type: "diagram",
+              kind: "structured",
+              pattern: "flow",
+              slot: "body",
+              nodes: [
+                { id: "a", label: "A" },
+                { id: "b", label: "B" },
+              ],
+              edges: [{ from: "a", to: "b" }],
+            },
+          ],
+        },
+      ],
+    });
+    const buf = await renderPdf(deck);
+    expect(isPdf(buf)).toBe(true);
+    expect(buf.length).toBeGreaterThan(500);
+  });
+
   it.skipIf(!JP_FONT)(
     "embeds and subsets a Japanese font so JP text renders (the MVP gate)",
     async () => {

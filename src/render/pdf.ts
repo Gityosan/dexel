@@ -1,4 +1,6 @@
 import PDFDocument from "pdfkit";
+import SVGtoPDF from "svg-to-pdfkit";
+import { renderDiagramSvg } from "../diagram/index.js";
 import type { Block, SlideDeck, VAnchor } from "../ir/index.js";
 import { resolveDeck } from "../layout/index.js";
 import { getTheme, type ThemeTokens } from "../theme/index.js";
@@ -145,15 +147,21 @@ function drawBlock(
       }
       return;
     case "diagram":
-      // SVG/native diagram rendering is a follow-up; preserve the text for now.
-      drawText(
-        doc,
-        block.kind === "mermaid"
-          ? `[mermaid diagram]\n${block.source}`
-          : `[${block.pattern}]\n${block.nodes.map((n) => n.label).join(" → ")}`,
-        box,
-        { font: f.mono, size: 12, color: t.color.muted },
-      );
+      if (block.kind === "structured") {
+        const svg = renderDiagramSvg(block, {
+          width: box.w,
+          height: box.h,
+          theme: t,
+        });
+        SVGtoPDF(doc, svg, box.x, box.y, { width: box.w, height: box.h });
+        return;
+      }
+      // Mermaid → SVG is a follow-up; preserve the source text for now.
+      drawText(doc, `[mermaid diagram]\n${block.source}`, box, {
+        font: f.mono,
+        size: 12,
+        color: t.color.muted,
+      });
       return;
   }
 }

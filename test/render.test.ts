@@ -48,6 +48,33 @@ describe("renderMarkdown", () => {
     expect(md).toContain("\n---\n");
   });
 
+  it("inlines structured diagrams as SVG", () => {
+    const d = SlideDeck.parse({
+      slides: [
+        {
+          layout: "title-content",
+          blocks: [
+            { type: "text", variant: "heading", text: "図" },
+            {
+              type: "diagram",
+              kind: "structured",
+              pattern: "flow",
+              slot: "body",
+              nodes: [
+                { id: "a", label: "Start" },
+                { id: "b", label: "End" },
+              ],
+              edges: [{ from: "a", to: "b" }],
+            },
+          ],
+        },
+      ],
+    });
+    const md = renderMarkdown(d);
+    expect(md).toContain("<svg");
+    expect(md).toContain(">Start<");
+  });
+
   it("fences mermaid diagrams", () => {
     const d = SlideDeck.parse({
       slides: [
