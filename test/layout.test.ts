@@ -8,19 +8,58 @@ import {
 
 describe("layout templates", () => {
   it("provides all five Tier-1 patterns", () => {
-    expect(new Set(supportedLayouts)).toEqual(
-      new Set([
-        "title",
-        "section-divider",
-        "title-content",
-        "two-column",
-        "bullet-list",
-      ]),
-    );
+    for (const p of [
+      "title",
+      "section-divider",
+      "title-content",
+      "two-column",
+      "bullet-list",
+    ] as const) {
+      expect(supportedLayouts).toContain(p);
+    }
   });
 
   it("throws a helpful error for an unimplemented pattern", () => {
-    expect(() => getLayoutTemplate("comparison")).toThrow(/not yet|Supported/i);
+    expect(() => getLayoutTemplate("full-bleed")).toThrow(/not yet|Supported/i);
+  });
+
+  it("resolves Tier-2 comparison and kpi-highlight layouts", () => {
+    const cmp = resolveSlide(
+      Slide.parse({
+        layout: "comparison",
+        blocks: [
+          { type: "text", variant: "heading", text: "A vs B" },
+          { type: "text", variant: "subheading", text: "Plan A" },
+          { type: "text", variant: "body", text: "details A" },
+          { type: "text", variant: "subheading", text: "Plan B" },
+          { type: "text", variant: "body", text: "details B" },
+        ],
+      }),
+    );
+    expect(cmp.placements.map((p) => p.slot.id)).toEqual([
+      "heading",
+      "leftTitle",
+      "left",
+      "rightTitle",
+      "right",
+    ]);
+
+    const kpi = resolveSlide(
+      Slide.parse({
+        layout: "kpi-highlight",
+        blocks: [
+          { type: "text", variant: "heading", text: "Numbers" },
+          { type: "kpi", value: "99%", label: "Uptime" },
+          { type: "kpi", value: "12ms", label: "p50" },
+        ],
+      }),
+    );
+    expect(kpi.placements.map((p) => p.slot.id)).toEqual([
+      "heading",
+      "kpi1",
+      "kpi2",
+    ]);
+    expect(kpi.overflow).toHaveLength(0);
   });
 });
 
