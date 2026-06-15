@@ -43,7 +43,8 @@ Early but end-to-end for the MVP core. Implemented:
 - **Themes** — authored as a small spec (bg/fg/accent + a curated categorical
   `series`); the neutral ramp (`surface`/`border`/`muted`) and `onAccent` are
   derived. Categorical diagrams (funnel, pyramid, matrix, cycle, venn) use the
-  series palette; code panels use the surface/border neutrals.
+  series palette; code blocks and grid-cards render on surface/border panels.
+  Slots can opt into a surface panel via `surface: true`.
 - **Builder session** — stateful `createDeck` / `addSection` / `render`, echoing
   a deck summary with selectable pattern hints on every step.
 - **MCP server** — the builder exposed as tools (`create_deck`, `add_section`,

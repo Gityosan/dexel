@@ -110,6 +110,66 @@ describe("pdf: data-URI image and empty deck", () => {
   });
 });
 
+describe("grid-cards surface panels", () => {
+  const gridDeck = SlideDeck.parse({
+    slides: [
+      {
+        layout: "grid-cards",
+        blocks: [
+          { type: "text", variant: "heading", text: "Cards" },
+          ...Array.from({ length: 6 }, (_, i) => ({
+            type: "text" as const,
+            variant: "body" as const,
+            text: `card ${i + 1}`,
+          })),
+        ],
+      },
+    ],
+  });
+
+  it("draws a panel behind each filled card in pptx", async () => {
+    const buf = await renderPptx(gridDeck);
+    const zip = await JSZip.loadAsync(buf);
+    const xml = await zip.file("ppt/slides/slide1.xml")!.async("string");
+    // Six filled card slots → six rounded-rect surface panels.
+    expect((xml.match(/prst="roundRect"/g) ?? []).length).toBe(6);
+  });
+
+  it("renders grid-cards to pdf without throwing", async () => {
+    const buf = await renderPdf(gridDeck);
+    expect(buf.subarray(0, 5).toString("latin1")).toBe("%PDF-");
+  });
+});
+
+describe("missing image falls back to a placeholder", () => {
+  const deck = SlideDeck.parse({
+    slides: [
+      {
+        layout: "image-caption",
+        blocks: [
+          { type: "text", variant: "heading", text: "Missing" },
+          { type: "image", src: "/no/such/image.png", alt: "diagram" },
+        ],
+      },
+    ],
+  });
+
+  it("pptx draws a placeholder shape, not a broken media part", async () => {
+    const buf = await renderPptx(deck);
+    const zip = await JSZip.loadAsync(buf);
+    const names = Object.keys(zip.files);
+    // No actual image media file (the bare media/ directory entry may exist).
+    expect(names.some((n) => /ppt\/media\/[^/]+\.\w+$/.test(n))).toBe(false);
+    const xml = await zip.file("ppt/slides/slide1.xml")!.async("string");
+    expect(xml).toContain('prst="roundRect"');
+  });
+
+  it("pdf renders a placeholder without throwing", async () => {
+    const buf = await renderPdf(deck);
+    expect(buf.subarray(0, 5).toString("latin1")).toBe("%PDF-");
+  });
+});
+
 describe("series palette wraps around", () => {
   it("reuses series[0] for the 7th categorical item", () => {
     const seven = Array.from({ length: 7 }, (_, i) => ({

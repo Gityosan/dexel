@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import pptxgen from "pptxgenjs";
 import type { Block, SlideDeck } from "../ir/index.js";
 
@@ -190,17 +191,33 @@ function addBlock(
         { ...p, valign, align: "center", fontFace: t.font.body },
       );
       return;
-    case "image":
-      slide.addImage({
-        ...p,
-        // pptxgenjs takes a file path or inline `data` (a data URI sans prefix).
-        ...(block.src.startsWith("data:")
-          ? { data: block.src.replace(/^data:/, "") }
-          : { path: block.src }),
-        sizing: { type: block.fit, w: 0, h: 0 },
-        altText: block.alt,
-      });
+    case "image": {
+      // pptxgenjs reads file paths at write time (a missing path throws), so
+      // only embed data URIs or existing files; otherwise draw a placeholder.
+      if (block.src.startsWith("data:") || existsSync(block.src)) {
+        slide.addImage({
+          ...p,
+          ...(block.src.startsWith("data:")
+            ? { data: block.src.replace(/^data:/, "") }
+            : { path: block.src }),
+          sizing: { type: block.fit, w: 0, h: 0 },
+          altText: block.alt,
+        });
+      } else {
+        slide.addText(block.alt ?? "image", {
+          ...p,
+          shape: shapes.roundRect,
+          fill: { color: bareHex(t.color.border) },
+          line: { color: bareHex(t.color.muted), width: 1 },
+          color: bareHex(bestOn(t.color.border)),
+          align: "center",
+          valign: "middle",
+          fontSize: 14,
+          fontFace: t.font.body,
+        });
+      }
       return;
+    }
     case "diagram":
       if (block.kind === "structured") {
         drawStructuredDiagram(slide, block, rect, t, shapes);
@@ -264,6 +281,13 @@ export async function renderPptx(
     const isTitleLayout =
       resolved.layout === "title" || resolved.layout === "section-divider";
     for (const { slot, block } of resolved.placements) {
+      if (slot.surface) {
+        slide.addShape(shapes.roundRect, {
+          ...pos(slot.rect),
+          fill: { color: bareHex(t.color.surface) },
+          line: { color: bareHex(t.color.border), width: 1 },
+        });
+      }
       addBlock(
         slide,
         block,

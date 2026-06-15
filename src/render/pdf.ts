@@ -163,10 +163,23 @@ function drawBlock(
           valign: "center",
         });
       } catch {
-        drawText(doc, `[image: ${block.src}]`, box, {
-          font: f.mono,
+        // Unloadable image → a gray placeholder rectangle with a caption.
+        doc
+          .save()
+          .rect(box.x, box.y, box.w, box.h)
+          .fillColor(t.color.border)
+          .fill()
+          .rect(box.x, box.y, box.w, box.h)
+          .lineWidth(1)
+          .strokeColor(t.color.muted)
+          .stroke()
+          .restore();
+        drawText(doc, block.alt ?? "image", box, {
+          font: f.body,
           size: 12,
-          color: t.color.muted,
+          color: t.color.fg,
+          align: "center",
+          vAnchor: "center",
         });
       }
       return;
@@ -238,16 +251,20 @@ export async function renderPdf(
     const isTitleLayout =
       resolved.layout === "title" || resolved.layout === "section-divider";
     for (const { slot, block } of resolved.placements) {
-      drawBlock(
-        doc,
-        block,
-        placeRect(slot.rect, canvas),
-        slot.vAnchor,
-        isTitleLayout,
-        t,
-        f,
-        mermaidSvgs,
-      );
+      const box = placeRect(slot.rect, canvas);
+      if (slot.surface) {
+        doc
+          .save()
+          .rect(box.x, box.y, box.w, box.h)
+          .fillColor(t.color.surface)
+          .fill()
+          .rect(box.x, box.y, box.w, box.h)
+          .lineWidth(1)
+          .strokeColor(t.color.border)
+          .stroke()
+          .restore();
+      }
+      drawBlock(doc, block, box, slot.vAnchor, isTitleLayout, t, f, mermaidSvgs);
     }
   }
 

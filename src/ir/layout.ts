@@ -56,6 +56,8 @@ export const Slot = z.object({
   rect: Rect,
   role: SlotRole,
   vAnchor: VAnchor.default("top"),
+  /** When true, renderers draw a surface panel (fill + border) behind the slot. */
+  surface: z.boolean().default(false),
 });
 
 export type Slot = z.infer<typeof Slot>;
