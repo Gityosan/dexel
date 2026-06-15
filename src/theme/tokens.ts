@@ -1,9 +1,36 @@
 import type { ThemeName } from "../ir/index.js";
+import { bestOn, mix } from "./color.js";
+
+export interface ThemeFont {
+  heading: string;
+  body: string;
+  mono: string;
+}
 
 /**
- * The resolved design tokens for a theme. Kept renderer-agnostic: each target
- * maps these onto its own native theme mechanism (pptx theme colors/fonts, pdf
- * draw colors, CSS custom properties for md/html).
+ * The colors a theme author provides. Only `bg`, `fg`, and `accent` are
+ * required; the neutral ramp (`muted`/`surface`/`border`), `onAccent`, and the
+ * categorical `series` are derived when omitted (see `resolveTheme`).
+ */
+export interface ThemeColorSpec {
+  bg: string;
+  fg: string;
+  accent: string;
+  muted?: string;
+  surface?: string;
+  border?: string;
+  onAccent?: string;
+  series?: string[];
+}
+
+export interface ThemeSpec {
+  color: ThemeColorSpec;
+  font?: Partial<ThemeFont>;
+}
+
+/**
+ * The fully-resolved design tokens a renderer consumes. Kept renderer-agnostic:
+ * each target maps these onto its own native mechanism.
  */
 export interface ThemeTokens {
   color: {
@@ -11,48 +38,110 @@ export interface ThemeTokens {
     bg: string;
     /** Primary text. */
     fg: string;
+    /** Accent for headings, KPIs, and diagram strokes. */
+    accent: string;
+    /** Legible text color on an accent fill. */
+    onAccent: string;
     /** Secondary / caption text. */
     muted: string;
-    /** Accent used for headings, KPIs, and diagram strokes. */
-    accent: string;
+    /** Panel/card/code background, a step off `bg`. */
+    surface: string;
+    /** Subtle outline/divider color. */
+    border: string;
+    /** Categorical palette for multi-item diagrams (funnel, venn, …). */
+    series: string[];
   };
-  font: {
-    heading: string;
-    body: string;
-    mono: string;
-  };
+  font: ThemeFont;
 }
 
 const JP_SANS = "Noto Sans JP";
 const JP_MONO = "Noto Sans Mono";
 
-const base = {
-  font: { heading: JP_SANS, body: JP_SANS, mono: JP_MONO },
-} satisfies Pick<ThemeTokens, "font">;
+/** Sequential tints of the accent — a fallback when a theme omits `series`. */
+function fallbackSeries(accent: string, bg: string, fg: string): string[] {
+  return [
+    accent,
+    mix(accent, fg, 0.25),
+    mix(accent, bg, 0.3),
+    mix(accent, fg, 0.5),
+    mix(accent, bg, 0.5),
+    mix(accent, fg, 0.7),
+  ];
+}
 
-/** Built-in themes, keyed by the IR's `ThemeName`. */
-export const themes: Record<ThemeName, ThemeTokens> = {
+/** Resolve an authored theme spec into full tokens, deriving what is omitted. */
+export function resolveTheme(spec: ThemeSpec): ThemeTokens {
+  const c = spec.color;
+  return {
+    color: {
+      bg: c.bg,
+      fg: c.fg,
+      accent: c.accent,
+      onAccent: c.onAccent ?? bestOn(c.accent),
+      muted: c.muted ?? mix(c.bg, c.fg, 0.45),
+      surface: c.surface ?? mix(c.bg, c.fg, 0.05),
+      border: c.border ?? mix(c.bg, c.fg, 0.14),
+      series: c.series ?? fallbackSeries(c.accent, c.bg, c.fg),
+    },
+    font: {
+      heading: spec.font?.heading ?? JP_SANS,
+      body: spec.font?.body ?? JP_SANS,
+      mono: spec.font?.mono ?? JP_MONO,
+    },
+  };
+}
+
+/** Built-in theme specs (curated series; neutrals derived). */
+const specs: Record<ThemeName, ThemeSpec> = {
   default: {
-    color: { bg: "#FFFFFF", fg: "#1A1A1A", muted: "#6B7280", accent: "#2563EB" },
-    ...base,
+    color: {
+      bg: "#FFFFFF",
+      fg: "#1A1A1A",
+      accent: "#2563EB",
+      series: ["#2563EB", "#16A34A", "#F59E0B", "#DC2626", "#9333EA", "#0891B2"],
+    },
   },
   dark: {
-    color: { bg: "#0F172A", fg: "#F1F5F9", muted: "#94A3B8", accent: "#38BDF8" },
-    ...base,
+    color: {
+      bg: "#0F172A",
+      fg: "#F1F5F9",
+      accent: "#38BDF8",
+      series: ["#38BDF8", "#34D399", "#FBBF24", "#F87171", "#C084FC", "#22D3EE"],
+    },
   },
   corporate: {
-    color: { bg: "#FFFFFF", fg: "#0B1F3A", muted: "#5B6B7F", accent: "#1D4ED8" },
-    ...base,
+    color: {
+      bg: "#FFFFFF",
+      fg: "#0B1F3A",
+      accent: "#1D4ED8",
+      series: ["#1D4ED8", "#0E7490", "#15803D", "#B45309", "#7E22CE", "#475569"],
+    },
   },
   minimal: {
-    color: { bg: "#FAFAFA", fg: "#111111", muted: "#777777", accent: "#111111" },
-    ...base,
+    color: {
+      bg: "#FAFAFA",
+      fg: "#111111",
+      accent: "#111111",
+      series: ["#111111", "#444444", "#777777", "#9A9A9A", "#BDBDBD", "#DADADA"],
+    },
   },
   vivid: {
-    color: { bg: "#FFFFFF", fg: "#18181B", muted: "#71717A", accent: "#DB2777" },
-    ...base,
+    color: {
+      bg: "#FFFFFF",
+      fg: "#18181B",
+      accent: "#DB2777",
+      series: ["#DB2777", "#7C3AED", "#2563EB", "#059669", "#EA580C", "#CA8A04"],
+    },
   },
 };
+
+/** Built-in resolved themes, keyed by the IR's `ThemeName`. */
+export const themes: Record<ThemeName, ThemeTokens> = Object.fromEntries(
+  (Object.keys(specs) as ThemeName[]).map((name) => [
+    name,
+    resolveTheme(specs[name]),
+  ]),
+) as Record<ThemeName, ThemeTokens>;
 
 /** Resolve a theme's tokens by name. */
 export function getTheme(name: ThemeName): ThemeTokens {

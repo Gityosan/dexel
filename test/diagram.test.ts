@@ -69,6 +69,22 @@ describe("renderDiagramSvg", () => {
     expect(svg).toContain('viewBox="0 0 400 200"');
   });
 
+  it("colors categorical patterns from the theme series palette", () => {
+    const svg = renderDiagramSvg(
+      diagram({
+        pattern: "funnel",
+        nodes: [
+          { id: "a", label: "A", value: 100 },
+          { id: "b", label: "B", value: 50 },
+        ],
+        edges: [],
+      }),
+    );
+    // default theme series[0]/[1].
+    expect(svg).toContain('fill="#2563EB"');
+    expect(svg).toContain('fill="#16A34A"');
+  });
+
   it("renders venn as overlapping ellipses", () => {
     const svg = renderDiagramSvg(
       diagram({

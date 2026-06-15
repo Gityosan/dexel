@@ -1,7 +1,12 @@
 import type { DiagBox, DiagEllipse, DiagLine } from "./layout.js";
 import { layoutDiagram } from "./layout.js";
 import type { DiagramBlock } from "../ir/index.js";
-import { getTheme, type ThemeTokens } from "../theme/index.js";
+import { bestOn, getTheme, type ThemeTokens } from "../theme/index.js";
+
+/** Resolve a series-palette color, wrapping if there are more items than colors. */
+function seriesColor(t: ThemeTokens, i: number): string {
+  return t.color.series[i % t.color.series.length]!;
+}
 
 /** The structured (node/edge) variant of a diagram block. */
 export type StructuredDiagram = Extract<DiagramBlock, { kind: "structured" }>;
@@ -37,22 +42,34 @@ function svgBox(b: DiagBox, ctx: Ctx): string {
   const y = b.y * ctx.h;
   const w = b.w * ctx.w;
   const h = b.h * ctx.h;
-  const rect = b.plain
-    ? ""
-    : `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="${ctx.t.color.bg}" stroke="${ctx.t.color.accent}" stroke-width="2"/>`;
+
+  let rect = "";
+  let textColor = ctx.t.color.fg;
+  if (!b.plain) {
+    const series =
+      b.seriesIndex !== undefined ? seriesColor(ctx.t, b.seriesIndex) : undefined;
+    const fill = series ?? ctx.t.color.bg;
+    const stroke = series ?? ctx.t.color.accent;
+    if (series) textColor = bestOn(series);
+    rect = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
+  }
   return [
     rect,
-    `<text x="${x + w / 2}" y="${y + h / 2}" fill="${ctx.t.color.fg}" font-size="16" `,
+    `<text x="${x + w / 2}" y="${y + h / 2}" fill="${textColor}" font-size="16" `,
     `text-anchor="middle" dominant-baseline="central">${escapeXml(b.label)}</text>`,
   ].join("");
 }
 
 function svgEllipse(e: DiagEllipse, ctx: Ctx): string {
+  const color =
+    e.seriesIndex !== undefined
+      ? seriesColor(ctx.t, e.seriesIndex)
+      : ctx.t.color.accent;
   return [
     `<ellipse cx="${e.cx * ctx.w}" cy="${e.cy * ctx.h}" `,
     `rx="${e.rx * ctx.w}" ry="${e.ry * ctx.h}" `,
-    `fill="${ctx.t.color.accent}" fill-opacity="${e.fillOpacity}" `,
-    `stroke="${ctx.t.color.accent}" stroke-width="2"/>`,
+    `fill="${color}" fill-opacity="${e.fillOpacity}" `,
+    `stroke="${color}" stroke-width="2"/>`,
   ].join("");
 }
 

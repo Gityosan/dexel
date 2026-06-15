@@ -39,7 +39,10 @@ Early but end-to-end for the MVP core. Implemented:
   **Mermaid** renders headlessly (jsdom) to SVG, embedded as vector in pdf and as
   a native SVG image in pptx (no rasterizer); md/html keep native mermaid
   fences/blocks.
-- **Themes** — 5 built-in token sets.
+- **Themes** — authored as a small spec (bg/fg/accent + a curated categorical
+  `series`); the neutral ramp (`surface`/`border`/`muted`) and `onAccent` are
+  derived. Categorical diagrams (funnel, pyramid, matrix, cycle, venn) use the
+  series palette; code panels use the surface/border neutrals.
 - **Builder session** — stateful `createDeck` / `addSection` / `render`, echoing
   a deck summary with selectable pattern hints on every step.
 - **MCP server** — the builder exposed as tools (`create_deck`, `add_section`,

@@ -125,6 +125,15 @@ function drawBlock(
       return;
     }
     case "code":
+      // Surface panel + subtle border behind the code (uses the derived neutrals).
+      doc
+        .rect(box.x, box.y, box.w, box.h)
+        .fillColor(t.color.surface)
+        .fill()
+        .rect(box.x, box.y, box.w, box.h)
+        .lineWidth(1)
+        .strokeColor(t.color.border)
+        .stroke();
       drawText(doc, block.code, box, { font: f.mono, size: 14, color: t.color.fg });
       return;
     case "kpi":

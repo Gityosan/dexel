@@ -14,7 +14,12 @@ import {
   prerenderMermaid,
 } from "../diagram/index.js";
 import { resolveDeck } from "../layout/index.js";
-import { bareHex, getTheme, type ThemeTokens } from "../theme/index.js";
+import { bareHex, bestOn, getTheme, type ThemeTokens } from "../theme/index.js";
+
+/** Resolve a series-palette color (bare hex), wrapping past the palette length. */
+function seriesHex(t: ThemeTokens, i: number): string {
+  return bareHex(t.color.series[i % t.color.series.length]!);
+}
 
 type Pct = `${number}%`;
 type Pos = { x: Pct; y: Pct; w: Pct; h: Pct };
@@ -54,6 +59,7 @@ function drawStructuredDiagram(
 ): void {
   for (const s of layoutDiagram(block)) {
     if (s.kind === "box") {
+      const series = s.seriesIndex !== undefined ? seriesHex(t, s.seriesIndex) : undefined;
       slide.addText(s.label, {
         x: pct(rect.x + s.x * rect.w),
         y: pct(rect.y + s.y * rect.h),
@@ -63,26 +69,27 @@ function drawStructuredDiagram(
           ? {}
           : {
               shape: shapes.roundRect,
-              fill: { color: bareHex(t.color.bg) },
-              line: { color: bareHex(t.color.accent), width: 1.5 },
+              fill: { color: series ?? bareHex(t.color.bg) },
+              line: { color: series ?? bareHex(t.color.accent), width: 1.5 },
             }),
-        color: bareHex(t.color.fg),
+        color: series ? bareHex(bestOn(`#${series}`)) : bareHex(t.color.fg),
         align: "center",
         valign: "middle",
         fontSize: 14,
         fontFace: t.font.body,
       });
     } else if (s.kind === "ellipse") {
+      const color = s.seriesIndex !== undefined ? seriesHex(t, s.seriesIndex) : bareHex(t.color.accent);
       slide.addShape(shapes.ellipse, {
         x: pct(rect.x + (s.cx - s.rx) * rect.w),
         y: pct(rect.y + (s.cy - s.ry) * rect.h),
         w: pct(2 * s.rx * rect.w),
         h: pct(2 * s.ry * rect.h),
         fill: {
-          color: bareHex(t.color.accent),
+          color,
           transparency: Math.round((1 - s.fillOpacity) * 100),
         },
-        line: { color: bareHex(t.color.accent), width: 1.5 },
+        line: { color, width: 1.5 },
       });
     } else {
       slide.addShape(shapes.line, {
@@ -169,6 +176,9 @@ function addBlock(
         color: fg,
         fontFace: t.font.mono,
         align: "left",
+        shape: shapes.rect,
+        fill: { color: bareHex(t.color.surface) },
+        line: { color: bareHex(t.color.border), width: 1 },
       });
       return;
     case "kpi":
