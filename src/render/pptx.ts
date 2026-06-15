@@ -40,9 +40,10 @@ function pos(rect: { x: number; y: number; w: number; h: number }): Pos {
 type StructuredDiagram = Extract<Block, { type: "diagram"; kind: "structured" }>;
 
 /**
- * Draw a structured diagram as native PowerPoint shapes (rounded-rect text boxes
- * + connector lines), using the shared diagram layout. Diagram-local normalized
- * coordinates are mapped into the slot's normalized rect, then to percentages.
+ * Draw a structured diagram as native PowerPoint shapes (rounded-rect text
+ * boxes, connector lines, and ellipses for venn), using the shared diagram
+ * layout. Diagram-local normalized coordinates are mapped into the slot's
+ * normalized rect, then to percentages.
  */
 function drawStructuredDiagram(
   slide: PptxSlide,
@@ -58,14 +59,30 @@ function drawStructuredDiagram(
         y: pct(rect.y + s.y * rect.h),
         w: pct(s.w * rect.w),
         h: pct(s.h * rect.h),
-        shape: shapes.roundRect,
-        fill: { color: bareHex(t.color.bg) },
-        line: { color: bareHex(t.color.accent), width: 1.5 },
+        ...(s.plain
+          ? {}
+          : {
+              shape: shapes.roundRect,
+              fill: { color: bareHex(t.color.bg) },
+              line: { color: bareHex(t.color.accent), width: 1.5 },
+            }),
         color: bareHex(t.color.fg),
         align: "center",
         valign: "middle",
         fontSize: 14,
         fontFace: t.font.body,
+      });
+    } else if (s.kind === "ellipse") {
+      slide.addShape(shapes.ellipse, {
+        x: pct(rect.x + (s.cx - s.rx) * rect.w),
+        y: pct(rect.y + (s.cy - s.ry) * rect.h),
+        w: pct(2 * s.rx * rect.w),
+        h: pct(2 * s.ry * rect.h),
+        fill: {
+          color: bareHex(t.color.accent),
+          transparency: Math.round((1 - s.fillOpacity) * 100),
+        },
+        line: { color: bareHex(t.color.accent), width: 1.5 },
       });
     } else {
       slide.addShape(shapes.line, {

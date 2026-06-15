@@ -1,4 +1,4 @@
-import type { DiagBox, DiagLine } from "./layout.js";
+import type { DiagBox, DiagEllipse, DiagLine } from "./layout.js";
 import { layoutDiagram } from "./layout.js";
 import type { DiagramBlock } from "../ir/index.js";
 import { getTheme, type ThemeTokens } from "../theme/index.js";
@@ -37,11 +37,22 @@ function svgBox(b: DiagBox, ctx: Ctx): string {
   const y = b.y * ctx.h;
   const w = b.w * ctx.w;
   const h = b.h * ctx.h;
+  const rect = b.plain
+    ? ""
+    : `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="${ctx.t.color.bg}" stroke="${ctx.t.color.accent}" stroke-width="2"/>`;
   return [
-    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" `,
-    `fill="${ctx.t.color.bg}" stroke="${ctx.t.color.accent}" stroke-width="2"/>`,
+    rect,
     `<text x="${x + w / 2}" y="${y + h / 2}" fill="${ctx.t.color.fg}" font-size="16" `,
     `text-anchor="middle" dominant-baseline="central">${escapeXml(b.label)}</text>`,
+  ].join("");
+}
+
+function svgEllipse(e: DiagEllipse, ctx: Ctx): string {
+  return [
+    `<ellipse cx="${e.cx * ctx.w}" cy="${e.cy * ctx.h}" `,
+    `rx="${e.rx * ctx.w}" ry="${e.ry * ctx.h}" `,
+    `fill="${ctx.t.color.accent}" fill-opacity="${e.fillOpacity}" `,
+    `stroke="${ctx.t.color.accent}" stroke-width="2"/>`,
   ].join("");
 }
 
@@ -70,7 +81,16 @@ export function renderDiagramSvg(
   const ctx: Ctx = { w: opts?.width ?? 800, h: opts?.height ?? 450, t };
 
   const body = layoutDiagram(d)
-    .map((s) => (s.kind === "box" ? svgBox(s, ctx) : svgLine(s, ctx)))
+    .map((s) => {
+      switch (s.kind) {
+        case "box":
+          return svgBox(s, ctx);
+        case "line":
+          return svgLine(s, ctx);
+        case "ellipse":
+          return svgEllipse(s, ctx);
+      }
+    })
     .join("");
 
   return [

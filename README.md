@@ -31,9 +31,11 @@ Early but end-to-end for the MVP core. Implemented:
   referential integrity, cardinality (e.g. matrix-2x2 ≤ 4, venn 2–3), required
   fields (funnel `value`, timeline `date`), and tree well-formedness (single
   root, no cycles).
-- **Diagrams** — shared normalized layout for structured patterns (flow,
-  matrix-2x2, generic fallback): SVG for pdf (vector) and md (inline), and
-  **native PowerPoint shapes** (rounded rects + connector lines) for pptx.
+- **Diagrams** — dedicated normalized layouts for every structured pattern (flow,
+  cycle, pyramid, matrix-2x2, funnel, timeline, tree/org-tree, venn — using the
+  schema's value/level/date/parent fields): SVG for pdf (vector) and md (inline),
+  and **native PowerPoint shapes** (rounded rects, connector lines, ellipses) for
+  pptx.
   **Mermaid** renders headlessly (jsdom) to SVG, embedded as vector in pdf and as
   a native SVG image in pptx (no rasterizer); md/html keep native mermaid
   fences/blocks.

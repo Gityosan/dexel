@@ -68,6 +68,127 @@ describe("renderDiagramSvg", () => {
     const svg = renderDiagramSvg(diagram({}), { width: 400, height: 200 });
     expect(svg).toContain('viewBox="0 0 400 200"');
   });
+
+  it("renders venn as overlapping ellipses", () => {
+    const svg = renderDiagramSvg(
+      diagram({
+        pattern: "venn",
+        nodes: [
+          { id: "a", label: "A" },
+          { id: "b", label: "B" },
+        ],
+        edges: [],
+      }),
+    );
+    expect((svg.match(/<ellipse /g) ?? []).length).toBe(2);
+    expect(svg).toContain(">A<");
+  });
+});
+
+describe("dedicated diagram layouts", () => {
+  const boxesOf = (shapes: ReturnType<typeof layoutDiagram>) =>
+    shapes.filter((s): s is DiagBox => s.kind === "box");
+
+  it("funnel: box widths scale with value", () => {
+    const boxes = boxesOf(
+      layoutDiagram(
+        diagram({
+          pattern: "funnel",
+          nodes: [
+            { id: "a", label: "Leads", value: 100 },
+            { id: "b", label: "Won", value: 40 },
+          ],
+          edges: [],
+        }),
+      ),
+    );
+    expect(boxes).toHaveLength(2);
+    expect(boxes[0]!.w).toBeGreaterThan(boxes[1]!.w);
+    expect(boxes[0]!.label).toContain("100");
+  });
+
+  it("pyramid: bottom tier wider than the apex, ordered by level", () => {
+    const boxes = boxesOf(
+      layoutDiagram(
+        diagram({
+          pattern: "pyramid",
+          nodes: [
+            { id: "c", label: "C", level: 2 },
+            { id: "a", label: "A", level: 0 },
+            { id: "b", label: "B", level: 1 },
+          ],
+          edges: [],
+        }),
+      ),
+    );
+    expect(boxes.map((b) => b.label)).toEqual(["A", "B", "C"]);
+    expect(boxes[2]!.w).toBeGreaterThan(boxes[0]!.w);
+  });
+
+  it("timeline: an axis plus one box per node", () => {
+    const shapes = layoutDiagram(
+      diagram({
+        pattern: "timeline",
+        nodes: [
+          { id: "b", label: "B", date: "2026-02" },
+          { id: "a", label: "A", date: "2026-01" },
+        ],
+        edges: [],
+      }),
+    );
+    expect(boxesOf(shapes)).toHaveLength(2);
+    expect(shapes.some((s) => s.kind === "line")).toBe(true);
+    // Sorted by date: A (Jan) before B (Feb).
+    expect(boxesOf(shapes)[0]!.label).toContain("A");
+  });
+
+  it("cycle: n boxes and n looping arrows", () => {
+    const shapes = layoutDiagram(
+      diagram({
+        pattern: "cycle",
+        nodes: [
+          { id: "a", label: "A" },
+          { id: "b", label: "B" },
+          { id: "c", label: "C" },
+        ],
+        edges: [],
+      }),
+    );
+    expect(boxesOf(shapes)).toHaveLength(3);
+    expect(shapes.filter((s) => s.kind === "line" && s.arrow)).toHaveLength(3);
+  });
+
+  it("tree: a box per node and n-1 connectors", () => {
+    const shapes = layoutDiagram(
+      diagram({
+        pattern: "tree",
+        nodes: [
+          { id: "r", label: "R" },
+          { id: "a", label: "A", parent: "r" },
+          { id: "b", label: "B", parent: "r" },
+        ],
+        edges: [],
+      }),
+    );
+    expect(boxesOf(shapes)).toHaveLength(3);
+    expect(shapes.filter((s) => s.kind === "line")).toHaveLength(2);
+  });
+
+  it("venn: ellipses plus plain (borderless) labels", () => {
+    const shapes = layoutDiagram(
+      diagram({
+        pattern: "venn",
+        nodes: [
+          { id: "a", label: "A" },
+          { id: "b", label: "B" },
+          { id: "c", label: "C" },
+        ],
+        edges: [],
+      }),
+    );
+    expect(shapes.filter((s) => s.kind === "ellipse")).toHaveLength(3);
+    expect(boxesOf(shapes).filter((b) => b.plain)).toHaveLength(3);
+  });
 });
 
 describe("layoutDiagram (shared geometry)", () => {

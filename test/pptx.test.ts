@@ -80,6 +80,34 @@ describe("renderPptx", () => {
     expect(xml).toContain("<a:t>Beta</a:t>");
   });
 
+  it("renders a venn diagram as native ellipse shapes", async () => {
+    const buf = await renderPptx(
+      SlideDeck.parse({
+        slides: [
+          {
+            layout: "title-content",
+            blocks: [
+              { type: "text", variant: "heading", text: "Venn" },
+              {
+                type: "diagram",
+                kind: "structured",
+                pattern: "venn",
+                slot: "body",
+                nodes: [
+                  { id: "a", label: "A" },
+                  { id: "b", label: "B" },
+                ],
+                edges: [],
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    const xml = await slideXml(buf);
+    expect((xml.match(/prst="ellipse"/g) ?? []).length).toBe(2);
+  });
+
   it("embeds mermaid diagrams as SVG images when enabled", async () => {
     const deck = SlideDeck.parse({
       slides: [
