@@ -54,7 +54,11 @@ describe("renderDiagramSvg", () => {
 
   it("escapes XML-significant characters in labels", () => {
     const svg = renderDiagramSvg(
-      diagram({ nodes: [{ id: "a", label: "<A & B>" }], edges: [] }),
+      diagram({
+        pattern: "pyramid",
+        nodes: [{ id: "a", label: "<A & B>" }],
+        edges: [],
+      }),
     );
     expect(svg).toContain("&lt;A &amp; B&gt;");
     expect(svg).not.toContain("<A & B>");

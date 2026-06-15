@@ -26,6 +26,11 @@ Early but end-to-end for the MVP core. Implemented:
   slots and reports overflow.
 - **Renderers** — Markdown, HTML (Google Doc paste), pptx (native text frames),
   and pdf (real text at coordinates, with **Japanese font embedding + subsetting**).
+- **Diagram schema** — structured diagrams carry per-pattern node fields
+  (`value`/`level`/`date`/`parent`) and are validated per pattern: edge/parent
+  referential integrity, cardinality (e.g. matrix-2x2 ≤ 4, venn 2–3), required
+  fields (funnel `value`, timeline `date`), and tree well-formedness (single
+  root, no cycles).
 - **Diagrams** — shared normalized layout for structured patterns (flow,
   matrix-2x2, generic fallback): SVG for pdf (vector) and md (inline), and
   **native PowerPoint shapes** (rounded rects + connector lines) for pptx.

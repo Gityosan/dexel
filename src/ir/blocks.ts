@@ -4,6 +4,7 @@ import {
   DiagramNode,
   MermaidDiagramPattern,
   StructuredDiagramPattern,
+  structuredDiagramIssues,
 } from "./diagram.js";
 
 /**
@@ -54,15 +55,23 @@ export type CodeBlock = z.infer<typeof CodeBlock>;
  * A figure, in one of two input systems: a structured node/edge schema or raw
  * mermaid source. Discriminated on `kind`.
  */
-export const DiagramBlock = z.discriminatedUnion("kind", [
-  z.object({
+const StructuredDiagramBlock = z
+  .object({
     type: z.literal("diagram"),
     kind: z.literal("structured"),
     slot,
     pattern: StructuredDiagramPattern,
     nodes: z.array(DiagramNode),
     edges: z.array(DiagramEdge),
-  }),
+  })
+  .superRefine((d, ctx) => {
+    for (const message of structuredDiagramIssues(d)) {
+      ctx.addIssue({ code: "custom", message });
+    }
+  });
+
+export const DiagramBlock = z.discriminatedUnion("kind", [
+  StructuredDiagramBlock,
   z.object({
     type: z.literal("diagram"),
     kind: z.literal("mermaid"),
