@@ -185,18 +185,30 @@ export const layoutTemplates: Partial<Record<LayoutPattern, LayoutTemplate>> = {
     pattern: "timeline",
     slots: [
       { id: "heading", role: "heading", rect: { x: M, y: 0.08, w: 1 - 2 * M, h: 0.12 } },
-      { id: "timeline", role: "diagram", rect: { x: M, y: 0.3, w: 1 - 2 * M, h: 0.4 }, vAnchor: "center" },
+      { id: "timeline", role: "diagram", rect: { x: M, y: 0.24, w: 1 - 2 * M, h: 0.5 }, vAnchor: "center" },
+      { id: "caption", role: "body", rect: { x: M, y: 0.78, w: 1 - 2 * M, h: 0.12 } },
     ],
-    flowOrder: ["heading", "timeline"],
+    flowOrder: ["heading", "timeline", "caption"],
   }),
 
   "process-steps": define({
     pattern: "process-steps",
     slots: [
       { id: "heading", role: "heading", rect: { x: M, y: 0.08, w: 1 - 2 * M, h: 0.12 } },
-      { id: "steps", role: "diagram", rect: { x: M, y: 0.32, w: 1 - 2 * M, h: 0.4 }, vAnchor: "center" },
+      { id: "steps", role: "diagram", rect: { x: M, y: 0.24, w: 1 - 2 * M, h: 0.5 }, vAnchor: "center" },
+      { id: "caption", role: "body", rect: { x: M, y: 0.78, w: 1 - 2 * M, h: 0.12 } },
     ],
-    flowOrder: ["heading", "steps"],
+    flowOrder: ["heading", "steps", "caption"],
+  }),
+
+  "content-diagram": define({
+    pattern: "content-diagram",
+    slots: [
+      { id: "heading", role: "heading", rect: { x: M, y: 0.08, w: 1 - 2 * M, h: 0.12 } },
+      { id: "body", role: "body", rect: { x: M, y: 0.22, w: 1 - 2 * M, h: 0.14 } },
+      { id: "diagram", role: "diagram", rect: { x: M, y: 0.4, w: 1 - 2 * M, h: 0.52 }, vAnchor: "center" },
+    ],
+    flowOrder: ["heading", "body", "diagram"],
   }),
 
   "grid-cards": define({

@@ -170,6 +170,64 @@ describe("resolveSlide", () => {
     expect(byId.left).toMatchObject({ text: "L" });
   });
 
+  it("places heading + body + diagram together (mixed content)", () => {
+    const resolved = resolveSlide(
+      Slide.parse({
+        layout: "content-diagram",
+        blocks: [
+          { type: "text", variant: "heading", text: "H" },
+          { type: "text", variant: "body", text: "lead" },
+          {
+            type: "diagram",
+            kind: "structured",
+            pattern: "flow",
+            nodes: [
+              { id: "a", label: "A" },
+              { id: "b", label: "B" },
+            ],
+            edges: [{ from: "a", to: "b" }],
+          },
+        ],
+      }),
+    );
+    expect(resolved.placements.map((p) => p.slot.id)).toEqual([
+      "heading",
+      "body",
+      "diagram",
+    ]);
+    expect(resolved.overflow).toHaveLength(0);
+  });
+
+  it("accepts a caption alongside a diagram in process-steps / timeline", () => {
+    for (const [layout, diagramSlot, pattern] of [
+      ["process-steps", "steps", "flow"],
+      ["timeline", "timeline", "timeline"],
+    ] as const) {
+      const resolved = resolveSlide(
+        Slide.parse({
+          layout,
+          blocks: [
+            { type: "text", variant: "heading", text: "H" },
+            {
+              type: "diagram",
+              kind: "structured",
+              pattern,
+              slot: diagramSlot,
+              nodes: [
+                { id: "a", label: "A", date: "2026-01" },
+                { id: "b", label: "B", date: "2026-02" },
+              ],
+              edges: [],
+            },
+            { type: "text", variant: "body", text: "caption" },
+          ],
+        }),
+      );
+      expect(resolved.overflow).toHaveLength(0);
+      expect(resolved.placements.map((p) => p.slot.id)).toContain("caption");
+    }
+  });
+
   it("reports blocks that do not fit as overflow", () => {
     const slide = Slide.parse({
       layout: "section-divider",

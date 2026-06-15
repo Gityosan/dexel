@@ -170,6 +170,26 @@
       ]
     },
     {
+      "layout": "content-diagram",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "content-diagram" },
+        { "type": "text", "variant": "body", "text": "見出し + リード文 + 図を1枚に。" },
+        {
+          "type": "diagram",
+          "kind": "structured",
+          "pattern": "cycle",
+          "slot": "diagram",
+          "nodes": [
+            { "id": "p", "label": "Plan" },
+            { "id": "d", "label": "Do" },
+            { "id": "c", "label": "Check" },
+            { "id": "a", "label": "Act" }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
       "layout": "title-content",
       "blocks": [
         { "type": "text", "variant": "heading", "text": "funnel" },

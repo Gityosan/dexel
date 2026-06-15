@@ -23,6 +23,7 @@ export const LayoutPattern = z.enum([
   // Tier 3 — nice to have
   "timeline",
   "process-steps",
+  "content-diagram",
   "grid-cards",
   "full-bleed",
   // Technical

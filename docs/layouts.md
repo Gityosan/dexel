@@ -32,8 +32,9 @@ text block; subheading/body/kpi/code/image/diagram slots take the matching block
 
 | Pattern | Slots (`id:role`) | Notes |
 |---|---|---|
-| `timeline` | `heading:heading`, `timeline:diagram` | put a structured `timeline` diagram in the slot |
-| `process-steps` | `heading:heading`, `steps:diagram` | put a structured `flow` diagram in the slot |
+| `timeline` | `heading:heading`, `timeline:diagram`, `caption:body` | structured `timeline` diagram + optional caption |
+| `process-steps` | `heading:heading`, `steps:diagram`, `caption:body` | structured `flow` diagram + optional caption |
+| `content-diagram` | `heading:heading`, `body:body`, `diagram:diagram` | heading + lead text + a diagram (mixed content) |
 | `grid-cards` | `heading:heading`, `c1`–`c6:body` | card slots are surface panels |
 | `full-bleed` | `image:image`, `heading:heading` | full-canvas image with a heading overlay |
 
