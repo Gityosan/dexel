@@ -23,7 +23,8 @@
     "dexel-mcp": "./dist/mcp/stdio.mjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "assets"
   ],
   "scripts": {
     "build": "tsdown",

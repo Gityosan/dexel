@@ -13,7 +13,11 @@ Render a deck JSON file (or `-` for stdin) to a target format.
 | `-t, --target` | `md` \| `html` \| `pptx` \| `pdf` (required) |
 | `-o, --out` | output file (text targets default to stdout; binary targets require it) |
 | `--mermaid` | render mermaid diagrams (pdf / pptx) |
-| `--font-body` / `--font-heading` / `--font-mono` | font files to embed (pdf) |
+| `--font-body` / `--font-heading` / `--font-mono` | font files to embed (pdf) — overrides the bundled default |
+
+> pdf bundles a Noto Sans JP subset and uses it by default, so Japanese renders
+> without any `--font-*` flag. Pass `--font-body` (etc.) for fuller glyph coverage
+> or a custom typeface; `--font-mono` to keep code monospaced with CJK.
 
 ```bash
 dexel render deck.json -t md                       # → stdout

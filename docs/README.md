@@ -31,9 +31,7 @@ deck.addSection("title", [
 ]);
 const md = deck.render("md");
 const pptx = await deck.renderToBuffer("pptx");
-const pdf = await deck.renderToBuffer("pdf", {
-  pdf: { fonts: { body: "/path/to/NotoSansJP.ttf" } }, // JP text → real text
-});
+const pdf = await deck.renderToBuffer("pdf"); // Japanese works by default
 ```
 
 Or from a deck JSON file, see [`../examples`](../examples).

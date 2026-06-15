@@ -30,6 +30,10 @@ ThemeTokens = {
 
 Color helpers `mix`, `relativeLuminance`, and `bestOn` are exported.
 
+The `font` names label the typefaces for pptx/HTML. For **pdf**, glyphs must be
+embedded: a Noto Sans JP subset ships and is used by default (so Japanese works
+with no setup); override per role with the `pdf.fonts` option.
+
 ## Where tokens are used
 
 | Token | Used for |

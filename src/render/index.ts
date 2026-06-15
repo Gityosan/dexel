@@ -8,6 +8,7 @@ export * from "./markdown.js";
 export * from "./html.js";
 export * from "./pptx.js";
 export * from "./pdf.js";
+export * from "./fonts.js";
 export * from "./geometry.js";
 
 /** Text output targets (synchronous, return a string). */

@@ -32,7 +32,9 @@ Early but end-to-end for the MVP core. Implemented:
   slots and reports overflow.
 - **Renderers** — Markdown, HTML (Google Doc paste), pptx (native text frames,
   speaker notes), and pdf (real text at coordinates, with **Japanese font
-  embedding + subsetting**, deck metadata). Images accept file paths or data URIs.
+  embedding + subsetting** — a Noto Sans JP subset is bundled and used by default,
+  so CJK renders out of the box; deck metadata). Images accept file paths or data
+  URIs.
 - **Diagram schema** — structured diagrams carry per-pattern node fields
   (`value`/`level`/`date`/`parent`) and are validated per pattern: edge/parent
   referential integrity, cardinality (e.g. matrix-2x2 ≤ 4, venn 2–3), required
@@ -118,6 +120,14 @@ TypeScript · Zod v4 (IR) · pptxgenjs (pptx) · pdfkit + fontkit + svg-to-pdfki
 @modelcontextprotocol/sdk (MCP) · tsdown (build) · vitest + fast-check (tests) ·
 eslint + prettier.
 
+### Bundled font
+
+`assets/fonts/noto-sans-jp-subset.ttf` is a subset of **Noto Sans JP** (Latin,
+kana, and the common kanji range), used as the default pdf font so Japanese
+renders without configuration. Licensed under the [SIL Open Font License 1.1](./assets/fonts/OFL.txt).
+For rare glyphs outside the subset, or a different typeface, pass your own font
+via the `pdf.fonts` option / `--font-*` flags.
+
 ## Authoring with the builder
 
 ```ts
@@ -135,9 +145,10 @@ const summary = deck.addSection("bullet-list", [
 // `summary` re-states sections + selectable pattern hints every call.
 
 const md = deck.render("md");
-const pdf = await deck.renderToBuffer("pdf", {
-  pdf: { fonts: { body: "/path/to/NotoSansJP.ttf" } },
-});
+const pptx = await deck.renderToBuffer("pptx");
+// Japanese renders out of the box (bundled font); pass `fonts` for fuller
+// glyph coverage or a custom typeface.
+const pdf = await deck.renderToBuffer("pdf");
 ```
 
 ## CLI

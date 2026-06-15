@@ -6,6 +6,7 @@ import {
   renderDiagramSvg,
 } from "../diagram/index.js";
 import type { Block, SlideDeck, VAnchor } from "../ir/index.js";
+import { bundledJpFontPath } from "./fonts.js";
 import { resolveDeck } from "../layout/index.js";
 import { getTheme, type ThemeTokens } from "../theme/index.js";
 import { type Box, canvasPt, placeRect, type Size } from "./geometry.js";
@@ -42,14 +43,18 @@ interface ResolvedFonts {
 
 /** Register any provided font files and return the font name to use per role. */
 function setupFonts(doc: Doc, fonts: PdfFonts | undefined): ResolvedFonts {
-  const body = fonts?.body
-    ? (doc.registerFont("body", fonts.body), "body")
+  // Default body/heading to the bundled Japanese font so CJK text renders as
+  // real text out of the box (the standard PDF fonts garble it). Mono stays
+  // Courier for monospaced code; pass `fonts.mono` for Japanese in code.
+  const bodyPath = fonts?.body ?? bundledJpFontPath();
+  const body = bodyPath
+    ? (doc.registerFont("body", bodyPath), "body")
     : "Helvetica";
   const heading = fonts?.heading
     ? (doc.registerFont("heading", fonts.heading), "heading")
-    : body === "Helvetica"
-      ? "Helvetica-Bold"
-      : body; // reuse the embedded body font (e.g. JP) rather than Latin-only bold
+    : body === "body"
+      ? body // reuse the embedded body font (JP) rather than Latin-only bold
+      : "Helvetica-Bold";
   const mono = fonts?.mono
     ? (doc.registerFont("mono", fonts.mono), "mono")
     : "Courier";

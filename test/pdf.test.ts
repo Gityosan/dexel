@@ -1,6 +1,11 @@
 import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { renderPdf, renderToBuffer, SlideDeck } from "../src/index.js";
+import {
+  bundledJpFontPath,
+  renderPdf,
+  renderToBuffer,
+  SlideDeck,
+} from "../src/index.js";
 
 /** A CJK-capable font, if one is available on this machine. */
 const JP_FONT = [
@@ -25,10 +30,30 @@ const latinDeck = SlideDeck.parse({
 });
 
 describe("renderPdf", () => {
-  it("produces a valid PDF with the standard Latin fonts", async () => {
+  it("produces a valid PDF", async () => {
     const buf = await renderPdf(latinDeck);
     expect(isPdf(buf)).toBe(true);
     expect(buf.length).toBeGreaterThan(500);
+  });
+
+  it("bundles a Japanese font and uses it by default (no garbled CJK)", async () => {
+    // The bundled font must be present...
+    expect(bundledJpFontPath()).toBeTruthy();
+    const jp = SlideDeck.parse({
+      slides: [
+        {
+          layout: "title-content",
+          blocks: [
+            { type: "text", variant: "heading", text: "日本語の見出し" },
+            { type: "text", variant: "body", text: "本文も実テキスト。" },
+          ],
+        },
+      ],
+    });
+    // ...and rendering Japanese with no font options embeds it (FontFile2).
+    const buf = await renderPdf(jp);
+    expect(isPdf(buf)).toBe(true);
+    expect(buf.toString("latin1")).toContain("FontFile2");
   });
 
   it("is reachable through renderToBuffer", async () => {
