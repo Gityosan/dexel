@@ -15,6 +15,12 @@ Two core values:
 2. **Choose-from-a-list authoring** — the LLM picks from enumerated patterns and
    stacks them, sidestepping free-layout coordinate solving.
 
+**Docs:** [`docs/`](./docs) — [IR](./docs/ir.md) ·
+[layouts](./docs/layouts.md) · [diagrams](./docs/diagrams.md) ·
+[themes](./docs/themes.md) · [CLI](./docs/cli.md) · [MCP](./docs/mcp.md).
+**Examples:** [`examples/`](./examples) (a full sample deck + a programmatic
+builder script).
+
 ## Status
 
 Early but end-to-end for the MVP core. Implemented:
