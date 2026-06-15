@@ -60,7 +60,16 @@ const renderCommand = defineCommand({
     "font-mono": { type: "string", description: "Mono font file to embed (pdf)" },
   },
   async run({ args }) {
-    const deck = SlideDeck.parse(JSON.parse(await readInput(args.input)));
+    let deck;
+    try {
+      deck = SlideDeck.parse(JSON.parse(await readInput(args.input)));
+    } catch (e) {
+      consola.error(
+        `Could not read deck "${args.input}": ${e instanceof Error ? e.message : String(e)}`,
+      );
+      process.exitCode = 1;
+      return;
+    }
     const target = args.target;
 
     if (TEXT_TARGETS.has(target)) {

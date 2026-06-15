@@ -23,6 +23,8 @@ export interface ResolvedSlide {
   placements: PlacedBlock[];
   /** Blocks with no available slot — surfaced rather than silently dropped. */
   overflow: Block[];
+  /** Speaker notes carried through from the slide (used by pptx). */
+  notes?: string;
 }
 
 /**
@@ -105,7 +107,13 @@ export function resolveSlide(slide: Slide): ResolvedSlide {
       (rank.get(b.slot.id) ?? Number.MAX_SAFE_INTEGER),
   );
 
-  return { layout: slide.layout, template, placements, overflow };
+  return {
+    layout: slide.layout,
+    template,
+    placements,
+    overflow,
+    ...(slide.notes !== undefined ? { notes: slide.notes } : {}),
+  };
 }
 
 /** Resolve every slide in a deck. */

@@ -24,8 +24,9 @@ Early but end-to-end for the MVP core. Implemented:
   comparison, kpi-highlight, quote, timeline, process-steps, grid-cards,
   full-bleed, code, code-explain), plus a **layout engine** that binds blocks to
   slots and reports overflow.
-- **Renderers** — Markdown, HTML (Google Doc paste), pptx (native text frames),
-  and pdf (real text at coordinates, with **Japanese font embedding + subsetting**).
+- **Renderers** — Markdown, HTML (Google Doc paste), pptx (native text frames,
+  speaker notes), and pdf (real text at coordinates, with **Japanese font
+  embedding + subsetting**, deck metadata). Images accept file paths or data URIs.
 - **Diagram schema** — structured diagrams carry per-pattern node fields
   (`value`/`level`/`date`/`parent`) and are validated per pattern: edge/parent
   referential integrity, cardinality (e.g. matrix-2x2 ≤ 4, venn 2–3), required

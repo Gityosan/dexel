@@ -193,7 +193,10 @@ function addBlock(
     case "image":
       slide.addImage({
         ...p,
-        path: block.src,
+        // pptxgenjs takes a file path or inline `data` (a data URI sans prefix).
+        ...(block.src.startsWith("data:")
+          ? { data: block.src.replace(/^data:/, "") }
+          : { path: block.src }),
         sizing: { type: block.fit, w: 0, h: 0 },
         altText: block.alt,
       });
@@ -257,6 +260,7 @@ export async function renderPptx(
   for (const resolved of resolveDeck(deck)) {
     const slide = pptx.addSlide();
     slide.background = { color: bareHex(t.color.bg) };
+    if (resolved.notes) slide.addNotes(resolved.notes);
     const isTitleLayout =
       resolved.layout === "title" || resolved.layout === "section-divider";
     for (const { slot, block } of resolved.placements) {

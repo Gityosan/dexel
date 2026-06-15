@@ -153,7 +153,11 @@ function drawBlock(
       return;
     case "image":
       try {
-        doc.image(block.src, box.x, box.y, {
+        // Decode data URIs to a Buffer; pdfkit takes a path or Buffer.
+        const src = block.src.startsWith("data:")
+          ? Buffer.from(block.src.slice(block.src.indexOf(",") + 1), "base64")
+          : block.src;
+        doc.image(src, box.x, box.y, {
           fit: [box.w, box.h],
           align: "center",
           valign: "center",
@@ -210,7 +214,15 @@ export async function renderPdf(
   const canvas: Size = canvasPt(deck.aspect);
   // Mermaid rendering is async, so resolve all diagrams before drawing.
   const mermaidSvgs = await prerenderMermaid(deck, opts?.mermaid);
-  const doc = new PDFDocument({ size: [canvas.w, canvas.h], margin: 0, autoFirstPage: false });
+  const doc = new PDFDocument({
+    size: [canvas.w, canvas.h],
+    margin: 0,
+    autoFirstPage: false,
+    info: {
+      ...(deck.meta?.title ? { Title: deck.meta.title } : {}),
+      ...(deck.meta?.author ? { Author: deck.meta.author } : {}),
+    },
+  });
   const f = setupFonts(doc, opts?.fonts);
 
   const chunks: Buffer[] = [];
