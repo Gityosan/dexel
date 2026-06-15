@@ -34,6 +34,50 @@ describe("renderDiagramSvg", () => {
     expect(renderDiagramSvg(diagram({}))).toContain("marker-end=\"url(#arrow)\"");
   });
 
+  it("routes backward / skip / self flow edges instead of dropping them", () => {
+    const nodes = [
+      { id: "a", label: "A" },
+      { id: "b", label: "B" },
+      { id: "c", label: "C" },
+    ];
+    const arrowed = (shapes: ReturnType<typeof layoutDiagram>) =>
+      shapes.filter((s) => s.kind === "line" && s.arrow);
+
+    // Backward edge c → a: routed as an elbow (3 segments, 1 arrowhead).
+    const back = layoutDiagram(
+      diagram({ pattern: "flow", nodes, edges: [{ from: "c", to: "a" }] }),
+    );
+    expect(back.filter((s) => s.kind === "line")).toHaveLength(3);
+    expect(arrowed(back)).toHaveLength(1);
+
+    // Skip-forward edge a → c: also routed (not a straight line through B).
+    const skip = layoutDiagram(
+      diagram({ pattern: "flow", nodes, edges: [{ from: "a", to: "c" }] }),
+    );
+    expect(skip.filter((s) => s.kind === "line")).toHaveLength(3);
+
+    // Self edge a → a: a small loop above the box.
+    const self = layoutDiagram(
+      diagram({ pattern: "flow", nodes, edges: [{ from: "a", to: "a" }] }),
+    );
+    expect(self.filter((s) => s.kind === "line")).toHaveLength(3);
+    expect(arrowed(self)).toHaveLength(1);
+  });
+
+  it("keeps adjacent flow edges as a single straight arrow", () => {
+    const adjacent = layoutDiagram(
+      diagram({
+        pattern: "flow",
+        nodes: [
+          { id: "a", label: "A" },
+          { id: "b", label: "B" },
+        ],
+        edges: [{ from: "a", to: "b" }],
+      }),
+    );
+    expect(adjacent.filter((s) => s.kind === "line")).toHaveLength(1);
+  });
+
   it("lays out matrix-2x2 with axes and up to four cells", () => {
     const svg = renderDiagramSvg(
       diagram({

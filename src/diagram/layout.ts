@@ -96,6 +96,10 @@ function flow(d: StructuredDiagram): DiagShape[] {
   const y = (1 - bh) / 2;
   const xOf = (i: number) => padX + i * (bw + gap);
 
+  const midY = y + bh / 2;
+  const laneBelow = Math.min(0.97, y + bh + 0.08);
+  const laneAbove = Math.max(0.03, y - 0.08);
+
   const boxes: DiagShape[] = d.nodes.map((node, i) =>
     box(xOf(i), y, bw, bh, node.label),
   );
@@ -104,9 +108,28 @@ function flow(d: StructuredDiagram): DiagShape[] {
   const pairs = d.edges.length
     ? d.edges.map((e) => [indexOf.get(e.from), indexOf.get(e.to)] as const)
     : d.nodes.slice(1).map((_, i) => [i, i + 1] as const);
-  const arrows: DiagShape[] = pairs
-    .filter(([a, b]) => a !== undefined && b !== undefined && a < b!)
-    .map(([a, b]) => line(xOf(a!) + bw, y + bh / 2, xOf(b!), y + bh / 2, true));
+
+  // Every valid edge is drawn: adjacent steps as a straight arrow, and skip /
+  // backward / self edges routed as an elbow so none are silently dropped.
+  const arrows: DiagShape[] = [];
+  for (const [a, b] of pairs) {
+    if (a === undefined || b === undefined) continue;
+    if (b === a + 1) {
+      arrows.push(line(xOf(a) + bw, midY, xOf(b), midY, true));
+    } else if (a === b) {
+      const x1 = xOf(a) + bw * 0.35;
+      const x2 = xOf(a) + bw * 0.65;
+      arrows.push(line(x1, y, x1, laneAbove, false));
+      arrows.push(line(x1, laneAbove, x2, laneAbove, false));
+      arrows.push(line(x2, laneAbove, x2, y, true));
+    } else {
+      const sx = xOf(a) + bw / 2;
+      const tx = xOf(b) + bw / 2;
+      arrows.push(line(sx, y + bh, sx, laneBelow, false));
+      arrows.push(line(sx, laneBelow, tx, laneBelow, false));
+      arrows.push(line(tx, laneBelow, tx, y + bh, true));
+    }
+  }
 
   return [...arrows, ...boxes];
 }
