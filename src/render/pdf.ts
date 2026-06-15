@@ -7,6 +7,11 @@ import {
 } from "../diagram/index.js";
 import type { Block, SlideDeck, VAnchor } from "../ir/index.js";
 import { bundledJpFontPath } from "./fonts.js";
+import {
+  type HighlightedCode,
+  lookupHighlight,
+  prehighlightDeck,
+} from "./highlight.js";
 import { resolveDeck } from "../layout/index.js";
 import { getTheme, type ThemeTokens } from "../theme/index.js";
 import { type Box, canvasPt, placeRect, type Size } from "./geometry.js";
@@ -67,6 +72,7 @@ type TextOpts = {
   color: string;
   align?: "left" | "center" | "right";
   vAnchor?: VAnchor;
+  bold?: boolean;
 };
 
 /** Draw text inside a box, honoring vertical anchoring via measured height. */
@@ -78,6 +84,10 @@ function drawText(doc: Doc, text: string, box: Box, o: TextOpts): void {
   if (o.vAnchor === "center") y = box.y + Math.max(0, (box.h - textHeight) / 2);
   else if (o.vAnchor === "bottom") y = box.y + Math.max(0, box.h - textHeight);
   doc.text(text, box.x, y, { width: box.w, height: box.h, align });
+  if (o.bold) {
+    // The embedded fonts ship Regular only; fake bold with a hairline offset draw.
+    doc.text(text, box.x + 0.4, y, { width: box.w, height: box.h, align });
+  }
 }
 
 function drawBlock(
@@ -89,6 +99,7 @@ function drawBlock(
   t: ThemeTokens,
   f: ResolvedFonts,
   mermaidSvgs: Map<string, string>,
+  highlights: Map<string, HighlightedCode>,
 ): void {
   switch (block.type) {
     case "text":
@@ -99,6 +110,7 @@ function drawBlock(
             size: isTitleLayout ? 40 : 30,
             color: isTitleLayout ? t.color.accent : t.color.fg,
             vAnchor,
+            bold: true,
           });
           return;
         case "subheading":
@@ -129,18 +141,46 @@ function drawBlock(
       drawText(doc, lines, box, { font: f.body, size: 18, color: t.color.fg });
       return;
     }
-    case "code":
-      // Surface panel + subtle border behind the code (uses the derived neutrals).
+    case "code": {
+      // Surface panel + subtle border behind the code (derived neutrals).
       doc
+        .save()
         .rect(box.x, box.y, box.w, box.h)
         .fillColor(t.color.surface)
         .fill()
         .rect(box.x, box.y, box.w, box.h)
         .lineWidth(1)
         .strokeColor(t.color.border)
-        .stroke();
-      drawText(doc, block.code, box, { font: f.mono, size: 14, color: t.color.fg });
+        .stroke()
+        .restore();
+      const pad = 8;
+      const size = 13;
+      const lineH = size * 1.35;
+      const innerX = box.x + pad;
+      const innerW = box.w - 2 * pad;
+      const bottom = box.y + box.h - pad;
+      doc.font(f.mono).fontSize(size);
+      const hl = lookupHighlight(highlights, block.language, block.code);
+      if (hl) {
+        hl.forEach((line, i) => {
+          const y = box.y + pad + i * lineH;
+          if (y + lineH > bottom + lineH) return; // clip overflowing lines
+          let x = innerX;
+          for (const tok of line) {
+            if (!tok.content) continue;
+            doc.fillColor(tok.color).text(tok.content, x, y, { lineBreak: false });
+            x += doc.widthOfString(tok.content);
+            if (x > innerX + innerW) break; // clip overflowing columns
+          }
+        });
+      } else {
+        doc.fillColor(t.color.fg).text(block.code, innerX, box.y + pad, {
+          width: innerW,
+          height: box.h - 2 * pad,
+        });
+      }
       return;
+    }
     case "kpi":
       drawText(doc, block.value, box, {
         font: f.heading,
@@ -230,8 +270,9 @@ export async function renderPdf(
 ): Promise<Buffer> {
   const t = getTheme(deck.theme);
   const canvas: Size = canvasPt(deck.aspect);
-  // Mermaid rendering is async, so resolve all diagrams before drawing.
+  // Mermaid and syntax highlighting are async, so resolve them before drawing.
   const mermaidSvgs = await prerenderMermaid(deck, opts?.mermaid);
+  const highlights = await prehighlightDeck(deck);
   const doc = new PDFDocument({
     size: [canvas.w, canvas.h],
     margin: 0,
@@ -269,7 +310,17 @@ export async function renderPdf(
           .stroke()
           .restore();
       }
-      drawBlock(doc, block, box, slot.vAnchor, isTitleLayout, t, f, mermaidSvgs);
+      drawBlock(
+        doc,
+        block,
+        box,
+        slot.vAnchor,
+        isTitleLayout,
+        t,
+        f,
+        mermaidSvgs,
+        highlights,
+      );
     }
   }
 

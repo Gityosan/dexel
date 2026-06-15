@@ -49,7 +49,7 @@ exports[`output snapshots > renders the deck to HTML 1`] = `
 <hr>
 <section>
 <h2>使い方</h2>
-<pre><code class="language-ts">render(deck, &quot;md&quot;);</code></pre>
+<pre style="padding:12px;background:#f6f8fa;border:1px solid #e1e4e8;border-radius:6px;overflow:auto"><code class="language-ts">render(deck, &quot;md&quot;);</code></pre>
 </section>
 <hr>
 <section>

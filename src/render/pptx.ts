@@ -14,6 +14,11 @@ import {
   type MermaidOption,
   prerenderMermaid,
 } from "../diagram/index.js";
+import {
+  type HighlightedCode,
+  lookupHighlight,
+  prehighlightDeck,
+} from "./highlight.js";
 import { resolveDeck } from "../layout/index.js";
 import { bareHex, bestOn, getTheme, type ThemeTokens } from "../theme/index.js";
 
@@ -118,6 +123,7 @@ function addBlock(
   t: ThemeTokens,
   shapes: PptxShapes,
   mermaidSvgs: Map<string, string>,
+  highlights: Map<string, HighlightedCode>,
 ): void {
   const fg = bareHex(t.color.fg);
   const accent = bareHex(t.color.accent);
@@ -169,19 +175,33 @@ function addBlock(
         { ...p, valign, fontSize: 18, color: fg, fontFace: t.font.body },
       );
       return;
-    case "code":
-      slide.addText(block.code, {
+    case "code": {
+      const panel = {
         ...p,
-        valign: "top",
+        valign: "top" as const,
         fontSize: 14,
-        color: fg,
         fontFace: t.font.mono,
-        align: "left",
+        align: "left" as const,
         shape: shapes.rect,
         fill: { color: bareHex(t.color.surface) },
         line: { color: bareHex(t.color.border), width: 1 },
-      });
+        margin: 8, // padding inside the panel
+      };
+      const hl = lookupHighlight(highlights, block.language, block.code);
+      if (hl) {
+        const runs = hl.flatMap((line, i) => [
+          ...line.map((tok) => ({
+            text: tok.content,
+            options: { color: bareHex(tok.color) },
+          })),
+          { text: i < hl.length - 1 ? "\n" : "", options: {} },
+        ]);
+        slide.addText(runs, panel);
+      } else {
+        slide.addText(block.code, { ...panel, color: fg });
+      }
       return;
+    }
     case "kpi":
       slide.addText(
         [
@@ -268,6 +288,7 @@ export async function renderPptx(
 ): Promise<Buffer> {
   const t = getTheme(deck.theme);
   const mermaidSvgs = await prerenderMermaid(deck, opts?.mermaid);
+  const highlights = await prehighlightDeck(deck);
   const pptx = new Pptx();
   pptx.layout = deck.aspect === "4:3" ? "LAYOUT_4x3" : "LAYOUT_WIDE";
   if (deck.meta?.title) pptx.title = deck.meta.title;
@@ -298,6 +319,7 @@ export async function renderPptx(
         t,
         shapes,
         mermaidSvgs,
+        highlights,
       );
     }
   }

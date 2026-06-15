@@ -78,7 +78,8 @@ describe("html covers every block type", () => {
   const html = renderHtml(kitchenSink);
   it("renders image, code, and kpi semantically", () => {
     expect(html).toContain("<img src=\"data:image/png");
-    expect(html).toContain("<pre><code class=\"language-ts\">const x = 1;</code></pre>");
+    expect(html).toContain("<code class=\"language-ts\">const x = 1;</code></pre>");
+    expect(html).toContain("padding:12px"); // code panel padding
     expect(html).toContain("<strong>99%</strong> Uptime");
   });
 });

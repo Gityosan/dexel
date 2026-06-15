@@ -40,7 +40,9 @@ function blockToHtml(block: Block, slide: ResolvedSlide): string {
     }
     case "code": {
       const cls = block.language ? ` class="language-${block.language}"` : "";
-      return `<pre><code${cls}>${escapeHtml(block.code)}</code></pre>`;
+      const style =
+        ' style="padding:12px;background:#f6f8fa;border:1px solid #e1e4e8;border-radius:6px;overflow:auto"';
+      return `<pre${style}><code${cls}>${escapeHtml(block.code)}</code></pre>`;
     }
     case "kpi": {
       const caption = block.caption
