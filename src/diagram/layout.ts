@@ -37,7 +37,15 @@ export interface DiagEllipse {
   seriesIndex?: number;
 }
 
-export type DiagShape = DiagBox | DiagLine | DiagEllipse;
+export type DiagShape = DiagBox | DiagLine | DiagEllipse | DiagPolygon;
+
+/** A filled polygon (e.g. a funnel trapezoid), in normalized 0–1 coordinates. */
+export interface DiagPolygon {
+  kind: "polygon";
+  points: Array<[number, number]>;
+  label?: string;
+  seriesIndex?: number;
+}
 
 const box = (
   x: number,
@@ -162,46 +170,51 @@ function matrix2x2(d: StructuredDiagram): DiagShape[] {
   return [...axes, ...cells];
 }
 
+/**
+ * A funnel: each stage is a trapezoid whose top edge matches its own value and
+ * whose bottom edge matches the next stage's value, so the stages form one
+ * continuous narrowing shape (no gaps, no separate connectors). `orientation:
+ * "horizontal"` runs the funnel left-to-right with height-by-value instead.
+ */
 function funnel(d: StructuredDiagram): DiagShape[] {
   const horizontal = d.orientation === "horizontal";
-  const gap = 0.03;
   const n = Math.max(1, d.nodes.length);
   const values = d.nodes.map((nd) => nd.value ?? 1);
   const maxV = Math.max(...values, 1);
-  const min = 0.25;
+  const min = 0.16;
   const max = 1 - 2 * PAD;
   const labels = d.nodes.map((nd) =>
     nd.value !== undefined ? `${nd.label} (${nd.value})` : nd.label,
   );
+  const sizeAt = (i: number) => min + (max - min) * (values[i]! / maxV);
 
-  // Each step's bar; the funnel narrows along the value axis.
-  const geom = d.nodes.map((_, i) => {
-    const size = min + (max - min) * (values[i]! / maxV);
+  return d.nodes.map((_, i) => {
+    const a = sizeAt(i);
+    const b = i < n - 1 ? sizeAt(i + 1) : a; // last stage: flat bottom/right
+    let points: Array<[number, number]>;
     if (horizontal) {
-      const colW = (1 - 2 * PAD - (n - 1) * gap) / n;
-      return { x: PAD + i * (colW + gap), y: (1 - size) / 2, w: colW, h: size };
-    }
-    const rowH = (1 - 2 * PAD - (n - 1) * gap) / n;
-    return { x: (1 - size) / 2, y: PAD + i * (rowH + gap), w: size, h: rowH };
-  });
-
-  const connectors: DiagShape[] = [];
-  for (let i = 0; i < geom.length - 1; i++) {
-    const a = geom[i]!;
-    const b = geom[i + 1]!;
-    if (horizontal) {
-      // join the right edge of a to the left edge of b (top and bottom corners)
-      connectors.push(line(a.x + a.w, a.y, b.x, b.y, false));
-      connectors.push(line(a.x + a.w, a.y + a.h, b.x, b.y + b.h, false));
+      const stageW = (1 - 2 * PAD) / n;
+      const x0 = PAD + i * stageW;
+      const x1 = x0 + stageW;
+      points = [
+        [x0, 0.5 - a / 2],
+        [x1, 0.5 - b / 2],
+        [x1, 0.5 + b / 2],
+        [x0, 0.5 + a / 2],
+      ];
     } else {
-      // join the bottom edge of a to the top edge of b (left and right corners)
-      connectors.push(line(a.x, a.y + a.h, b.x, b.y, false));
-      connectors.push(line(a.x + a.w, a.y + a.h, b.x + b.w, b.y, false));
+      const stageH = (1 - 2 * PAD) / n;
+      const y0 = PAD + i * stageH;
+      const y1 = y0 + stageH;
+      points = [
+        [0.5 - a / 2, y0],
+        [0.5 + a / 2, y0],
+        [0.5 + b / 2, y1],
+        [0.5 - b / 2, y1],
+      ];
     }
-  }
-
-  const boxes = geom.map((g, i) => box(g.x, g.y, g.w, g.h, labels[i]!, { series: i }));
-  return [...connectors, ...boxes];
+    return { kind: "polygon", points, label: labels[i]!, seriesIndex: i };
+  });
 }
 
 function pyramid(d: StructuredDiagram): DiagShape[] {

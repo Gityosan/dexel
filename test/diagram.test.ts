@@ -149,7 +149,7 @@ describe("dedicated diagram layouts", () => {
   const boxesOf = (shapes: ReturnType<typeof layoutDiagram>) =>
     shapes.filter((s): s is DiagBox => s.kind === "box");
 
-  it("funnel: box widths scale with value, with connecting lines", () => {
+  it("funnel: continuous trapezoids whose top width tracks the value", () => {
     const shapes = layoutDiagram(
       diagram({
         pattern: "funnel",
@@ -160,33 +160,38 @@ describe("dedicated diagram layouts", () => {
         edges: [],
       }),
     );
-    const boxes = boxesOf(shapes);
-    expect(boxes).toHaveLength(2);
-    expect(boxes[0]!.w).toBeGreaterThan(boxes[1]!.w);
-    expect(boxes[0]!.label).toContain("100");
-    // Two connectors (left + right side) join the two steps.
-    expect(shapes.filter((s) => s.kind === "line")).toHaveLength(2);
+    const polys = shapes.filter((s) => s.kind === "polygon");
+    expect(polys).toHaveLength(2);
+    // Vertical funnel: top edge of step 0 (points 0..1) is wider than step 1's.
+    const topWidth = (p: (typeof polys)[number]) =>
+      p.kind === "polygon" ? p.points[1]![0] - p.points[0]![0] : 0;
+    expect(topWidth(polys[0]!)).toBeGreaterThan(topWidth(polys[1]!));
+    // Stages are continuous: step 0's bottom edge equals step 1's top edge.
+    if (polys[0]!.kind === "polygon" && polys[1]!.kind === "polygon") {
+      expect(polys[0]!.points[3]![0]).toBeCloseTo(polys[1]!.points[0]![0], 5);
+    }
+    expect(polys[0]!.kind === "polygon" && polys[0]!.label).toContain("100");
   });
 
   it("funnel: horizontal orientation lays steps left-to-right", () => {
-    const boxes = boxesOf(
-      layoutDiagram(
-        diagram({
-          pattern: "funnel",
-          orientation: "horizontal",
-          nodes: [
-            { id: "a", label: "A", value: 100 },
-            { id: "b", label: "B", value: 50 },
-            { id: "c", label: "C", value: 20 },
-          ],
-          edges: [],
-        }),
-      ),
-    );
-    expect(boxes.map((b) => b.x)).toEqual([...boxes.map((b) => b.x)].sort((a, b) => a - b));
-    expect(boxes[0]!.x).toBeLessThan(boxes[2]!.x);
-    // Heights shrink with value when horizontal.
-    expect(boxes[0]!.h).toBeGreaterThan(boxes[2]!.h);
+    const polys = layoutDiagram(
+      diagram({
+        pattern: "funnel",
+        orientation: "horizontal",
+        nodes: [
+          { id: "a", label: "A", value: 100 },
+          { id: "b", label: "B", value: 50 },
+          { id: "c", label: "C", value: 20 },
+        ],
+        edges: [],
+      }),
+    ).filter((s) => s.kind === "polygon");
+    expect(polys).toHaveLength(3);
+    // Left x of each trapezoid increases across the steps.
+    const leftX = (i: number) =>
+      polys[i]!.kind === "polygon" ? polys[i]!.points[0]![0] : 0;
+    expect(leftX(0)).toBeLessThan(leftX(1));
+    expect(leftX(1)).toBeLessThan(leftX(2));
   });
 
   it("pyramid: bottom tier wider than the apex, ordered by level", () => {

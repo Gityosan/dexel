@@ -187,9 +187,9 @@ describe("series palette wraps around", () => {
         edges: [],
       }) as StructuredDiagram,
     );
-    const boxes = shapes.filter((s) => s.kind === "box");
-    expect(boxes[0]!.kind === "box" && boxes[0]!.seriesIndex).toBe(0);
-    expect(boxes[6]!.kind === "box" && boxes[6]!.seriesIndex).toBe(6);
+    const polys = shapes.filter((s) => s.kind === "polygon");
+    expect(polys[0]!.kind === "polygon" && polys[0]!.seriesIndex).toBe(0);
+    expect(polys[6]!.kind === "polygon" && polys[6]!.seriesIndex).toBe(6);
   });
 });
 

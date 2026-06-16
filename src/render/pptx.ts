@@ -32,6 +32,8 @@ type Pct = `${number}%`;
 type Pos = { x: Pct; y: Pct; w: Pct; h: Pct };
 type VAlign = "top" | "middle" | "bottom";
 type PptxShapes = PptxInstance["ShapeType"];
+// `custGeom` is a valid runtime shape name but is missing from the typings.
+const CUST_GEOM = "custGeom" as Parameters<PptxSlide["addShape"]>[0];
 type Rect = { x: number; y: number; w: number; h: number };
 
 const pct = (n: number): Pct => `${n * 100}%`;
@@ -63,6 +65,7 @@ function drawStructuredDiagram(
   rect: Rect,
   t: ThemeTokens,
   shapes: PptxShapes,
+  canvasIn: { w: number; h: number },
 ): void {
   for (const s of layoutDiagram(block)) {
     if (s.kind === "box") {
@@ -98,7 +101,7 @@ function drawStructuredDiagram(
         },
         line: { color, width: 1.5 },
       });
-    } else {
+    } else if (s.kind === "line") {
       slide.addShape(shapes.line, {
         x: pct(rect.x + s.x1 * rect.w),
         y: pct(rect.y + s.y1 * rect.h),
@@ -110,6 +113,48 @@ function drawStructuredDiagram(
           endArrowType: s.arrow ? "triangle" : "none",
         },
       });
+    } else {
+      // Polygon (funnel trapezoid) → native custom geometry. OOXML path
+      // coordinates are local to the shape, so work in inches from the shape's
+      // top-left rather than slide percentages.
+      const color =
+        s.seriesIndex !== undefined ? seriesHex(t, s.seriesIndex) : bareHex(t.color.accent);
+      const sp = s.points.map(
+        ([px, py]) => [rect.x + px * rect.w, rect.y + py * rect.h] as const,
+      );
+      const minX = Math.min(...sp.map((p) => p[0]));
+      const minY = Math.min(...sp.map((p) => p[1]));
+      const maxX = Math.max(...sp.map((p) => p[0]));
+      const maxY = Math.max(...sp.map((p) => p[1]));
+      slide.addShape(CUST_GEOM, {
+        x: minX * canvasIn.w,
+        y: minY * canvasIn.h,
+        w: (maxX - minX) * canvasIn.w,
+        h: (maxY - minY) * canvasIn.h,
+        points: [
+          ...sp.map((p, i) => ({
+            x: (p[0] - minX) * canvasIn.w,
+            y: (p[1] - minY) * canvasIn.h,
+            ...(i === 0 ? { moveTo: true } : {}),
+          })),
+          { close: true as const },
+        ],
+        fill: { color },
+        line: { color: bareHex(t.color.bg), width: 1 },
+      });
+      if (s.label) {
+        slide.addText(s.label, {
+          x: pct(minX),
+          y: pct(minY),
+          w: pct(maxX - minX),
+          h: pct(maxY - minY),
+          align: "center",
+          valign: "middle",
+          color: bareHex(bestOn(`#${color}`)),
+          fontSize: 14,
+          fontFace: t.font.body,
+        });
+      }
     }
   }
 }
@@ -125,6 +170,7 @@ function addBlock(
   shapes: PptxShapes,
   mermaidSvgs: Map<string, string>,
   highlights: Map<string, HighlightedCode>,
+  canvasIn: { w: number; h: number },
 ): void {
   const fg = bareHex(t.color.fg);
   const accent = bareHex(t.color.accent);
@@ -228,8 +274,14 @@ function addBlock(
     case "kpi":
       slide.addText(
         [
-          { text: `${block.value}\n`, options: { fontSize: 44, bold: true, color: accent } },
-          { text: block.label, options: { fontSize: 16, color: muted } },
+          {
+            text: block.value,
+            options: { fontSize: 44, bold: true, color: accent, breakLine: true },
+          },
+          {
+            text: block.label,
+            options: { fontSize: 16, color: muted, paraSpaceBefore: 8 },
+          },
         ],
         { ...p, valign, align: "center", fontFace: t.font.body },
       );
@@ -263,7 +315,7 @@ function addBlock(
     }
     case "diagram":
       if (block.kind === "structured") {
-        drawStructuredDiagram(slide, block, rect, t, shapes);
+        drawStructuredDiagram(slide, block, rect, t, shapes, canvasIn);
         return;
       }
       {
@@ -314,6 +366,8 @@ export async function renderPptx(
   const highlights = await prehighlightDeck(deck);
   const pptx = new Pptx();
   pptx.layout = deck.aspect === "4:3" ? "LAYOUT_4x3" : "LAYOUT_WIDE";
+  // Slide size in inches, for native custom geometry (local path coordinates).
+  const canvasIn = deck.aspect === "4:3" ? { w: 10, h: 7.5 } : { w: 13.333, h: 7.5 };
   if (deck.meta?.title) pptx.title = deck.meta.title;
   if (deck.meta?.author) pptx.author = deck.meta.author;
   const shapes = pptx.ShapeType;
@@ -345,6 +399,7 @@ export async function renderPptx(
         shapes,
         mermaidSvgs,
         highlights,
+        canvasIn,
       );
     }
   }

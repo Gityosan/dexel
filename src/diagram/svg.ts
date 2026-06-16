@@ -1,4 +1,4 @@
-import type { DiagBox, DiagEllipse, DiagLine } from "./layout.js";
+import type { DiagBox, DiagEllipse, DiagLine, DiagPolygon } from "./layout.js";
 import { layoutDiagram } from "./layout.js";
 import type { DiagramBlock } from "../ir/index.js";
 import { bestOn, getTheme, type ThemeTokens } from "../theme/index.js";
@@ -82,6 +82,21 @@ function svgLine(l: DiagLine, ctx: Ctx): string {
   ].join("");
 }
 
+function svgPolygon(p: DiagPolygon, ctx: Ctx): string {
+  const color =
+    p.seriesIndex !== undefined
+      ? seriesColor(ctx.t, p.seriesIndex)
+      : ctx.t.color.accent;
+  const pts = p.points
+    .map(([x, y]) => `${x * ctx.w},${y * ctx.h}`)
+    .join(" ");
+  const poly = `<polygon points="${pts}" fill="${color}" stroke="${ctx.t.color.bg}" stroke-width="1"/>`;
+  if (!p.label) return poly;
+  const cx = (p.points.reduce((s, [x]) => s + x, 0) / p.points.length) * ctx.w;
+  const cy = (p.points.reduce((s, [, y]) => s + y, 0) / p.points.length) * ctx.h;
+  return `${poly}<text x="${cx}" y="${cy}" fill="${bestOn(color)}" font-size="16" text-anchor="middle" dominant-baseline="central">${escapeXml(p.label)}</text>`;
+}
+
 const ARROW_MARKER =
   '<defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="currentColor"/></marker></defs>';
 
@@ -106,6 +121,8 @@ export function renderDiagramSvg(
           return svgLine(s, ctx);
         case "ellipse":
           return svgEllipse(s, ctx);
+        case "polygon":
+          return svgPolygon(s, ctx);
       }
     })
     .join("");

@@ -207,21 +207,31 @@ function drawBlock(
       }
       return;
     }
-    case "kpi":
-      drawText(doc, block.value, box, {
-        font: f.heading,
-        size: 44,
-        color: t.color.accent,
-        align: "center",
-        vAnchor,
-      });
+    case "kpi": {
+      // Value in the upper part, label below with a clear gap.
+      const valueH = box.h * 0.52;
+      drawText(
+        doc,
+        block.value,
+        { ...box, h: valueH },
+        {
+          font: f.heading,
+          size: 44,
+          color: t.color.accent,
+          align: "center",
+          vAnchor: "bottom",
+          bold: true,
+        },
+      );
+      const labelY = box.y + valueH + box.h * 0.08;
       drawText(
         doc,
         block.label,
-        { ...box, y: box.y + box.h * 0.6 },
-        { font: f.body, size: 16, color: t.color.muted, align: "center" },
+        { x: box.x, y: labelY, w: box.w, h: box.y + box.h - labelY },
+        { font: f.body, size: 16, color: t.color.muted, align: "center", vAnchor: "top" },
       );
       return;
+    }
     case "image":
       try {
         // Decode data URIs to a Buffer; pdfkit takes a path or Buffer.
