@@ -14,7 +14,7 @@ import {
 } from "./highlight.js";
 import { resolveDeck } from "../layout/index.js";
 import { getTheme, type ThemeTokens } from "../theme/index.js";
-import { type Box, canvasPt, placeRect, type Size } from "./geometry.js";
+import { type Box, canvasPt, insetRect, placeRect, type Size } from "./geometry.js";
 
 type Doc = InstanceType<typeof PDFDocument>;
 
@@ -142,13 +142,39 @@ function drawBlock(
       return;
     }
     case "code": {
+      // Optional filename tab (rounded top corners) above the panel.
+      let panel = box;
+      if (block.filename) {
+        const tabH = 22;
+        const r = 6;
+        doc.font(f.mono).fontSize(11);
+        const tabW = Math.min(box.w, doc.widthOfString(block.filename) + 20);
+        const tx = box.x;
+        const ty = box.y;
+        doc
+          .save()
+          .moveTo(tx, ty + tabH)
+          .lineTo(tx, ty + r)
+          .quadraticCurveTo(tx, ty, tx + r, ty)
+          .lineTo(tx + tabW - r, ty)
+          .quadraticCurveTo(tx + tabW, ty, tx + tabW, ty + r)
+          .lineTo(tx + tabW, ty + tabH)
+          .lineTo(tx, ty + tabH)
+          .fillColor(t.color.border)
+          .fill()
+          .restore();
+        doc
+          .fillColor(t.color.fg)
+          .text(block.filename, tx + 10, ty + 6, { width: tabW - 16, lineBreak: false });
+        panel = { x: box.x, y: box.y + tabH, w: box.w, h: box.h - tabH };
+      }
       // Surface panel + subtle border behind the code (derived neutrals).
       doc
         .save()
-        .rect(box.x, box.y, box.w, box.h)
+        .rect(panel.x, panel.y, panel.w, panel.h)
         .fillColor(t.color.surface)
         .fill()
-        .rect(box.x, box.y, box.w, box.h)
+        .rect(panel.x, panel.y, panel.w, panel.h)
         .lineWidth(1)
         .strokeColor(t.color.border)
         .stroke()
@@ -156,14 +182,14 @@ function drawBlock(
       const pad = 8;
       const size = 13;
       const lineH = size * 1.35;
-      const innerX = box.x + pad;
-      const innerW = box.w - 2 * pad;
-      const bottom = box.y + box.h - pad;
+      const innerX = panel.x + pad;
+      const innerW = panel.w - 2 * pad;
+      const bottom = panel.y + panel.h - pad;
       doc.font(f.mono).fontSize(size);
       const hl = lookupHighlight(highlights, block.language, block.code);
       if (hl) {
         hl.forEach((line, i) => {
-          const y = box.y + pad + i * lineH;
+          const y = panel.y + pad + i * lineH;
           if (y + lineH > bottom + lineH) return; // clip overflowing lines
           let x = innerX;
           for (const tok of line) {
@@ -174,9 +200,9 @@ function drawBlock(
           }
         });
       } else {
-        doc.fillColor(t.color.fg).text(block.code, innerX, box.y + pad, {
+        doc.fillColor(t.color.fg).text(block.code, innerX, panel.y + pad, {
           width: innerW,
-          height: box.h - 2 * pad,
+          height: panel.h - 2 * pad,
         });
       }
       return;
@@ -297,19 +323,21 @@ export async function renderPdf(
     const isTitleLayout =
       resolved.layout === "title" || resolved.layout === "section-divider";
     for (const { slot, block } of resolved.placements) {
-      const box = placeRect(slot.rect, canvas);
+      const slotBox = placeRect(slot.rect, canvas);
       if (slot.surface) {
         doc
           .save()
-          .rect(box.x, box.y, box.w, box.h)
+          .rect(slotBox.x, slotBox.y, slotBox.w, slotBox.h)
           .fillColor(t.color.surface)
           .fill()
-          .rect(box.x, box.y, box.w, box.h)
+          .rect(slotBox.x, slotBox.y, slotBox.w, slotBox.h)
           .lineWidth(1)
           .strokeColor(t.color.border)
           .stroke()
           .restore();
       }
+      // Surface panels (e.g. grid cards) inset their content for padding.
+      const box = slot.surface ? insetRect(slotBox, 10) : slotBox;
       drawBlock(
         doc,
         block,

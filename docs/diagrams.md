@@ -14,7 +14,7 @@ items from the theme's `series` palette.
 | `cycle` | `label` | ≥ 2 nodes; nodes placed on a circle, looped arrows |
 | `pyramid` | `label`, `level?` | ≥ 1 node; ordered by `level`, widening to the base |
 | `matrix-2x2` | `label` | 1–4 nodes (quadrants) |
-| `funnel` | `label`, **`value`** | ≥ 2 nodes; each node needs a numeric `value` (bar width) |
+| `funnel` | `label`, **`value`** | ≥ 2 nodes, each with a numeric `value`; bars sized by value with connecting lines. `orientation: "horizontal"` lays steps left-to-right (default vertical) |
 | `org-tree` | `label`, `parent?` | tree (single root, no cycles) via `parent`/edges |
 | `tree` | `label`, `parent?` | tree (single root, no cycles) via `parent`/edges |
 | `timeline` | `label`, **`date`** | ≥ 1 node; each node needs a `date` (sorted along an axis) |

@@ -29,3 +29,13 @@ export function placeRect(rect: Box, canvas: Size): Box {
     h: rect.h * canvas.h,
   };
 }
+
+/** Shrink a rect on all sides by `pad` (same units as the rect). */
+export function insetRect(box: Box, pad: number): Box {
+  return {
+    x: box.x + pad,
+    y: box.y + pad,
+    w: Math.max(0, box.w - 2 * pad),
+    h: Math.max(0, box.h - 2 * pad),
+  };
+}

@@ -40,9 +40,12 @@ function blockToHtml(block: Block, slide: ResolvedSlide): string {
     }
     case "code": {
       const cls = block.language ? ` class="language-${block.language}"` : "";
-      const style =
-        ' style="padding:12px;background:#f6f8fa;border:1px solid #e1e4e8;border-radius:6px;overflow:auto"';
-      return `<pre${style}><code${cls}>${escapeHtml(block.code)}</code></pre>`;
+      const radius = block.filename ? "0 6px 6px 6px" : "6px";
+      const style = ` style="padding:12px;background:#f6f8fa;border:1px solid #e1e4e8;border-radius:${radius};overflow:auto"`;
+      const pre = `<pre${style}><code${cls}>${escapeHtml(block.code)}</code></pre>`;
+      if (!block.filename) return pre;
+      const tab = `<div style="display:inline-block;padding:4px 12px;background:#e1e4e8;border:1px solid #e1e4e8;border-bottom:none;border-radius:6px 6px 0 0;font-family:monospace;font-size:12px">${escapeHtml(block.filename)}</div>`;
+      return `${tab}\n${pre}`;
     }
     case "kpi": {
       const caption = block.caption

@@ -45,6 +45,8 @@ export const CodeBlock = z.object({
   type: z.literal("code"),
   slot,
   language: z.string().optional(),
+  /** Optional filename shown as a tab above the code panel. */
+  filename: z.string().optional(),
   code: z.string(),
   showLineNumbers: z.boolean().default(false),
 });
@@ -61,6 +63,8 @@ const StructuredDiagramBlock = z
     kind: z.literal("structured"),
     slot,
     pattern: StructuredDiagramPattern,
+    /** Layout direction for orientation-aware patterns (e.g. funnel). */
+    orientation: z.enum(["horizontal", "vertical"]).optional(),
     nodes: z.array(DiagramNode),
     edges: z.array(DiagramEdge),
   })

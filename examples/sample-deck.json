@@ -197,6 +197,7 @@
           "type": "diagram",
           "kind": "structured",
           "pattern": "funnel",
+          "orientation": "horizontal",
           "slot": "body",
           "nodes": [
             { "id": "a", "label": "訪問", "value": 1000 },
@@ -264,6 +265,7 @@
         {
           "type": "code",
           "language": "ts",
+          "filename": "deck.ts",
           "code": "import { createDeck } from \"dexel\";\nconst deck = createDeck({ theme: \"corporate\" });"
         }
       ]

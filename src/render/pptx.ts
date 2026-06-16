@@ -19,6 +19,7 @@ import {
   lookupHighlight,
   prehighlightDeck,
 } from "./highlight.js";
+import { insetRect } from "./geometry.js";
 import { resolveDeck } from "../layout/index.js";
 import { bareHex, bestOn, getTheme, type ThemeTokens } from "../theme/index.js";
 
@@ -176,8 +177,30 @@ function addBlock(
       );
       return;
     case "code": {
+      const tabH = 0.055;
+      const panelRect = block.filename
+        ? { x: rect.x, y: rect.y + tabH, w: rect.w, h: Math.max(0, rect.h - tabH) }
+        : rect;
+      if (block.filename) {
+        const tabW = Math.min(rect.w, 0.05 + block.filename.length * 0.011);
+        slide.addText(block.filename, {
+          x: pct(rect.x),
+          y: pct(rect.y),
+          w: pct(tabW),
+          h: pct(tabH),
+          shape: shapes.round2SameRect, // top-two corners rounded → a tab
+          fill: { color: bareHex(t.color.border) },
+          line: { color: bareHex(t.color.border), width: 1 },
+          color: bareHex(t.color.fg),
+          align: "center",
+          valign: "middle",
+          fontSize: 11,
+          fontFace: t.font.mono,
+          margin: 2,
+        });
+      }
       const panel = {
-        ...p,
+        ...pos(panelRect),
         valign: "top" as const,
         fontSize: 14,
         fontFace: t.font.mono,
@@ -309,11 +332,13 @@ export async function renderPptx(
           line: { color: bareHex(t.color.border), width: 1 },
         });
       }
+      // Surface panels (e.g. grid cards) inset their content for padding.
+      const content = slot.surface ? insetRect(slot.rect, 0.012) : slot.rect;
       addBlock(
         slide,
         block,
-        pos(slot.rect),
-        slot.rect,
+        pos(content),
+        content,
         valignOf(slot.vAnchor),
         isTitleLayout,
         t,

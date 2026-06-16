@@ -39,7 +39,7 @@ id to bind to).
 |---|---|
 | `text` | `variant: heading \| subheading \| body \| paragraph` (default `body`), `text` |
 | `list` | `ordered` (default false), `items: { text, level }[]` |
-| `code` | `language?`, `code`, `showLineNumbers` (default false) |
+| `code` | `language?`, `filename?` (shown as a tab), `code`, `showLineNumbers` (default false) |
 | `image` | `src` (file path or data URI), `alt?`, `fit: contain \| cover` |
 | `kpi` | `value`, `label`, `caption?` |
 | `diagram` | discriminated on `kind` — see below |
@@ -49,6 +49,7 @@ id to bind to).
 ```ts
 // structured: authored as nodes/edges
 { type: "diagram", kind: "structured", pattern: StructuredDiagramPattern,
+  orientation?: "horizontal" | "vertical",  // for funnel
   nodes: DiagramNode[], edges: DiagramEdge[] }
 
 // mermaid: authored as mermaid source

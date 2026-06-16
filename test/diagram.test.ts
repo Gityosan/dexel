@@ -149,22 +149,44 @@ describe("dedicated diagram layouts", () => {
   const boxesOf = (shapes: ReturnType<typeof layoutDiagram>) =>
     shapes.filter((s): s is DiagBox => s.kind === "box");
 
-  it("funnel: box widths scale with value", () => {
+  it("funnel: box widths scale with value, with connecting lines", () => {
+    const shapes = layoutDiagram(
+      diagram({
+        pattern: "funnel",
+        nodes: [
+          { id: "a", label: "Leads", value: 100 },
+          { id: "b", label: "Won", value: 40 },
+        ],
+        edges: [],
+      }),
+    );
+    const boxes = boxesOf(shapes);
+    expect(boxes).toHaveLength(2);
+    expect(boxes[0]!.w).toBeGreaterThan(boxes[1]!.w);
+    expect(boxes[0]!.label).toContain("100");
+    // Two connectors (left + right side) join the two steps.
+    expect(shapes.filter((s) => s.kind === "line")).toHaveLength(2);
+  });
+
+  it("funnel: horizontal orientation lays steps left-to-right", () => {
     const boxes = boxesOf(
       layoutDiagram(
         diagram({
           pattern: "funnel",
+          orientation: "horizontal",
           nodes: [
-            { id: "a", label: "Leads", value: 100 },
-            { id: "b", label: "Won", value: 40 },
+            { id: "a", label: "A", value: 100 },
+            { id: "b", label: "B", value: 50 },
+            { id: "c", label: "C", value: 20 },
           ],
           edges: [],
         }),
       ),
     );
-    expect(boxes).toHaveLength(2);
-    expect(boxes[0]!.w).toBeGreaterThan(boxes[1]!.w);
-    expect(boxes[0]!.label).toContain("100");
+    expect(boxes.map((b) => b.x)).toEqual([...boxes.map((b) => b.x)].sort((a, b) => a - b));
+    expect(boxes[0]!.x).toBeLessThan(boxes[2]!.x);
+    // Heights shrink with value when horizontal.
+    expect(boxes[0]!.h).toBeGreaterThan(boxes[2]!.h);
   });
 
   it("pyramid: bottom tier wider than the apex, ordered by level", () => {

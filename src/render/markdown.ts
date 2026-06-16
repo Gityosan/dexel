@@ -35,7 +35,8 @@ function blockToMarkdown(
         .join("\n");
     case "code": {
       const lang = block.language ?? "";
-      return `\`\`\`${lang}\n${block.code}\n\`\`\``;
+      const fence = `\`\`\`${lang}\n${block.code}\n\`\`\``;
+      return block.filename ? `\`${block.filename}\`\n${fence}` : fence;
     }
     case "kpi": {
       const caption = block.caption ? ` — ${block.caption}` : "";

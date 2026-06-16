@@ -163,19 +163,45 @@ function matrix2x2(d: StructuredDiagram): DiagShape[] {
 }
 
 function funnel(d: StructuredDiagram): DiagShape[] {
-  const gap = 0.02;
+  const horizontal = d.orientation === "horizontal";
+  const gap = 0.03;
   const n = Math.max(1, d.nodes.length);
-  const rowH = (1 - 2 * PAD - (n - 1) * gap) / n;
   const values = d.nodes.map((nd) => nd.value ?? 1);
   const maxV = Math.max(...values, 1);
-  const wMin = 0.25;
-  const wMax = 1 - 2 * PAD;
-  return d.nodes.map((nd, i) => {
-    const w = wMin + (wMax - wMin) * (values[i]! / maxV);
-    const y = PAD + i * (rowH + gap);
-    const label = nd.value !== undefined ? `${nd.label} (${nd.value})` : nd.label;
-    return box((1 - w) / 2, y, w, rowH, label, { series: i });
+  const min = 0.25;
+  const max = 1 - 2 * PAD;
+  const labels = d.nodes.map((nd) =>
+    nd.value !== undefined ? `${nd.label} (${nd.value})` : nd.label,
+  );
+
+  // Each step's bar; the funnel narrows along the value axis.
+  const geom = d.nodes.map((_, i) => {
+    const size = min + (max - min) * (values[i]! / maxV);
+    if (horizontal) {
+      const colW = (1 - 2 * PAD - (n - 1) * gap) / n;
+      return { x: PAD + i * (colW + gap), y: (1 - size) / 2, w: colW, h: size };
+    }
+    const rowH = (1 - 2 * PAD - (n - 1) * gap) / n;
+    return { x: (1 - size) / 2, y: PAD + i * (rowH + gap), w: size, h: rowH };
   });
+
+  const connectors: DiagShape[] = [];
+  for (let i = 0; i < geom.length - 1; i++) {
+    const a = geom[i]!;
+    const b = geom[i + 1]!;
+    if (horizontal) {
+      // join the right edge of a to the left edge of b (top and bottom corners)
+      connectors.push(line(a.x + a.w, a.y, b.x, b.y, false));
+      connectors.push(line(a.x + a.w, a.y + a.h, b.x, b.y + b.h, false));
+    } else {
+      // join the bottom edge of a to the top edge of b (left and right corners)
+      connectors.push(line(a.x, a.y + a.h, b.x, b.y, false));
+      connectors.push(line(a.x + a.w, a.y + a.h, b.x + b.w, b.y, false));
+    }
+  }
+
+  const boxes = geom.map((g, i) => box(g.x, g.y, g.w, g.h, labels[i]!, { series: i }));
+  return [...connectors, ...boxes];
 }
 
 function pyramid(d: StructuredDiagram): DiagShape[] {
