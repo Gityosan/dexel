@@ -30,6 +30,14 @@ describe("renderMermaidSvg (headless)", () => {
     expect(svg).toContain("flowchart");
     expect(svg.length).toBeGreaterThan(1000);
   }, 30000);
+
+  it("inlines CSS so class-styled lines keep a visible stroke", async () => {
+    // svg-to-pdfkit ignores <style>; the stroke must be a presentation attribute.
+    const svg = await renderMermaidSvg("sequenceDiagram\n A->>B: hi");
+    const line = svg.match(/<line[^>]*class="messageLine0"[^>]*>/)?.[0] ?? "";
+    expect(line).toMatch(/\sstroke="#[0-9a-fA-F]+"/);
+    expect(line).not.toContain('stroke="none"');
+  }, 30000);
 });
 
 describe("pdf mermaid embedding", () => {
