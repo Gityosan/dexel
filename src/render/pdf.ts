@@ -133,7 +133,7 @@ function drawBlock(
         case "heading":
           drawText(doc, block.text, box, {
             font: f.heading,
-            size: isTitleLayout ? 40 : 30,
+            size: isTitleLayout ? t.type.title : t.type.heading,
             color: override ?? (isTitleLayout ? t.color.accent : t.color.fg),
             vAnchor,
             bold: true,
@@ -143,7 +143,7 @@ function drawBlock(
         case "subheading":
           drawText(doc, block.text, box, {
             font: f.heading,
-            size: 22,
+            size: t.type.subheading,
             color: override ?? t.color.muted,
             vAnchor,
             align,
@@ -152,7 +152,7 @@ function drawBlock(
         default:
           drawText(doc, block.text, box, {
             font: f.body,
-            size: 18,
+            size: t.type.body,
             color: override ?? t.color.fg,
             vAnchor,
             align,
@@ -168,7 +168,7 @@ function drawBlock(
           return `${indent}${marker} ${item.text}`;
         })
         .join("\n");
-      drawText(doc, lines, box, { font: f.body, size: 18, color: t.color.fg });
+      drawText(doc, lines, box, { font: f.body, size: t.type.body, color: t.color.fg });
       return;
     }
     case "code": {
@@ -210,7 +210,7 @@ function drawBlock(
         .stroke()
         .restore();
       const pad = 8;
-      const size = 13;
+      const size = t.type.code;
       const lineH = size * 1.35;
       const innerX = panel.x + pad;
       const innerW = panel.w - 2 * pad;
@@ -246,7 +246,7 @@ function drawBlock(
         { ...box, h: valueH },
         {
           font: f.heading,
-          size: 44,
+          size: t.type.kpi,
           color: t.color.accent,
           align: "center",
           vAnchor: "bottom",
@@ -258,7 +258,7 @@ function drawBlock(
         doc,
         block.label,
         { x: box.x, y: labelY, w: box.w, h: box.y + box.h - labelY },
-        { font: f.body, size: 16, color: t.color.muted, align: "center", vAnchor: "top" },
+        { font: f.body, size: t.type.caption + 6, color: t.color.muted, align: "center", vAnchor: "top" },
       );
       return;
     }
@@ -422,7 +422,7 @@ function drawChrome(
   if (chrome.footer) {
     drawText(doc, chrome.footer, { x: canvas.w * 0.04, y, w: canvas.w * 0.6, h }, {
       font: f.body,
-      size: 9,
+      size: t.type.caption,
       color: t.color.muted,
       align: "left",
     });
@@ -430,7 +430,7 @@ function drawChrome(
   if (chrome.pageNumbers) {
     drawText(doc, `${page} / ${total}`, { x: canvas.w * 0.8, y, w: canvas.w * 0.16, h }, {
       font: f.body,
-      size: 9,
+      size: t.type.caption,
       color: t.color.muted,
       align: "right",
     });

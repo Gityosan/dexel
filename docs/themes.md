@@ -13,11 +13,13 @@ Themes are authored as a small **`ThemeSpec`** and resolved to full
 ThemeSpec = {
   color: { bg, fg, accent, series?, muted?, surface?, border?, onAccent? }
   font?: { heading?, body?, mono? }
+  type?: { title?, heading?, subheading?, body?, kpi?, code?, caption? }  // pt
 }
 
 ThemeTokens = {
   color: { bg, fg, accent, onAccent, muted, surface, border, series: string[] }
   font:  { heading, body, mono }   // default Noto Sans JP / Noto Sans Mono
+  type:  { title, heading, subheading, body, kpi, code, caption }  // font sizes (pt)
 }
 ```
 

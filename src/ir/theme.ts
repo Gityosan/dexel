@@ -35,10 +35,23 @@ export const ThemeFontSpec = z.object({
 });
 export type ThemeFontSpec = z.infer<typeof ThemeFontSpec>;
 
+/** Font sizes (pt) per role; any omitted size falls back to a default. */
+export const ThemeTypeSpec = z.object({
+  title: z.number().optional(),
+  heading: z.number().optional(),
+  subheading: z.number().optional(),
+  body: z.number().optional(),
+  kpi: z.number().optional(),
+  code: z.number().optional(),
+  caption: z.number().optional(),
+});
+export type ThemeTypeSpec = z.infer<typeof ThemeTypeSpec>;
+
 /** A full custom theme spec (resolved to tokens at render time). */
 export const ThemeSpec = z.object({
   color: ThemeColorSpec,
   font: ThemeFontSpec.optional(),
+  type: ThemeTypeSpec.optional(),
 });
 export type ThemeSpec = z.infer<typeof ThemeSpec>;
 

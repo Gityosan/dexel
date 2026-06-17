@@ -207,7 +207,7 @@ function addBlock(
             ...alignOpt,
             fit: "shrink",
             bold: true,
-            fontSize: isTitleLayout ? 40 : 30,
+            fontSize: isTitleLayout ? t.type.title : t.type.heading,
             color: override ?? (isTitleLayout ? accent : fg),
             fontFace: t.font.heading,
           });
@@ -218,7 +218,7 @@ function addBlock(
             valign,
             ...alignOpt,
             fit: "shrink",
-            fontSize: 22,
+            fontSize: t.type.subheading,
             color: override ?? muted,
             fontFace: t.font.heading,
           });
@@ -229,7 +229,7 @@ function addBlock(
             valign,
             ...alignOpt,
             fit: "shrink",
-            fontSize: 18,
+            fontSize: t.type.body,
             color: override ?? fg,
             fontFace: t.font.body,
           });
@@ -247,7 +247,7 @@ function addBlock(
             indentLevel: item.level,
           },
         })),
-        { ...p, valign, fit: "shrink", fontSize: 18, color: fg, fontFace: t.font.body },
+        { ...p, valign, fit: "shrink", fontSize: t.type.body, color: fg, fontFace: t.font.body },
       );
       return;
     case "code": {
@@ -276,7 +276,7 @@ function addBlock(
       const panel = {
         ...pos(panelRect),
         valign: "top" as const,
-        fontSize: 14,
+        fontSize: t.type.code,
         fontFace: t.font.mono,
         align: "left" as const,
         shape: shapes.rect,
@@ -304,7 +304,7 @@ function addBlock(
         [
           {
             text: block.value,
-            options: { fontSize: 44, bold: true, color: accent, breakLine: true },
+            options: { fontSize: t.type.kpi, bold: true, color: accent, breakLine: true },
           },
           {
             text: block.label,
@@ -451,13 +451,13 @@ function drawChrome(
   if (chrome.footer) {
     slide.addText(chrome.footer, {
       x: "4%", y: "94.5%", w: "60%", h: "4%",
-      fontSize: 9, color: muted, align: "left", fontFace: t.font.body,
+      fontSize: t.type.caption, color: muted, align: "left", fontFace: t.font.body,
     });
   }
   if (chrome.pageNumbers) {
     slide.addText(`${page} / ${total}`, {
       x: "80%", y: "94.5%", w: "16%", h: "4%",
-      fontSize: 9, color: muted, align: "right", fontFace: t.font.body,
+      fontSize: t.type.caption, color: muted, align: "right", fontFace: t.font.body,
     });
   }
   if (chrome.logo) {

@@ -31,6 +31,16 @@ export interface ThemeTokens {
     series: string[];
   };
   font: ThemeFont;
+  /** Font sizes (pt) per role; the max for shrink-to-fit. */
+  type: {
+    title: number;
+    heading: number;
+    subheading: number;
+    body: number;
+    kpi: number;
+    code: number;
+    caption: number;
+  };
 }
 
 const JP_SANS = "Noto Sans JP";
@@ -66,6 +76,15 @@ export function resolveTheme(spec: ThemeSpec): ThemeTokens {
       heading: spec.font?.heading ?? JP_SANS,
       body: spec.font?.body ?? JP_SANS,
       mono: spec.font?.mono ?? JP_MONO,
+    },
+    type: {
+      title: spec.type?.title ?? 40,
+      heading: spec.type?.heading ?? 30,
+      subheading: spec.type?.subheading ?? 22,
+      body: spec.type?.body ?? 18,
+      kpi: spec.type?.kpi ?? 44,
+      code: spec.type?.code ?? 14,
+      caption: spec.type?.caption ?? 9,
     },
   };
 }
