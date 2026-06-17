@@ -76,9 +76,30 @@ type TextOpts = {
   bold?: boolean;
 };
 
+/**
+ * Largest size ≤ `maxSize` at which the text fits the box: every explicit line
+ * fits the width (CJK has no break opportunities, so pdfkit won't wrap it) and
+ * the wrapped height fits. Shrink-to-fit so headings/dense panels never clip.
+ */
+function fitSize(doc: Doc, text: string, font: string, box: Box, maxSize: number): number {
+  doc.font(font);
+  const lines = text.split("\n");
+  let size = maxSize;
+  while (size > 8) {
+    doc.fontSize(size);
+    const widest = Math.max(0, ...lines.map((l) => doc.widthOfString(l)));
+    if (widest <= box.w && doc.heightOfString(text, { width: box.w }) <= box.h) {
+      break;
+    }
+    size -= 1;
+  }
+  return size;
+}
+
 /** Draw text inside a box, honoring vertical anchoring via measured height. */
 function drawText(doc: Doc, text: string, box: Box, o: TextOpts): void {
-  doc.font(o.font).fontSize(o.size).fillColor(o.color);
+  const size = fitSize(doc, text, o.font, box, o.size);
+  doc.font(o.font).fontSize(size).fillColor(o.color);
   const align = o.align ?? "left";
   const textHeight = doc.heightOfString(text, { width: box.w, align });
   let y = box.y;

@@ -102,6 +102,7 @@ function drawStructuredDiagram(
         color: series ? bareHex(bestOn(`#${series}`)) : bareHex(t.color.fg),
         align: "center",
         valign: "middle",
+        fit: "shrink",
         fontSize: 14,
         fontFace: t.font.body,
       });
@@ -204,6 +205,7 @@ function addBlock(
             ...p,
             valign,
             ...alignOpt,
+            fit: "shrink",
             bold: true,
             fontSize: isTitleLayout ? 40 : 30,
             color: override ?? (isTitleLayout ? accent : fg),
@@ -215,6 +217,7 @@ function addBlock(
             ...p,
             valign,
             ...alignOpt,
+            fit: "shrink",
             fontSize: 22,
             color: override ?? muted,
             fontFace: t.font.heading,
@@ -225,6 +228,7 @@ function addBlock(
             ...p,
             valign,
             ...alignOpt,
+            fit: "shrink",
             fontSize: 18,
             color: override ?? fg,
             fontFace: t.font.body,
@@ -243,7 +247,7 @@ function addBlock(
             indentLevel: item.level,
           },
         })),
-        { ...p, valign, fontSize: 18, color: fg, fontFace: t.font.body },
+        { ...p, valign, fit: "shrink", fontSize: 18, color: fg, fontFace: t.font.body },
       );
       return;
     case "code": {
