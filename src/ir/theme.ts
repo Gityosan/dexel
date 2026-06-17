@@ -14,3 +14,34 @@ export const ThemeName = z.enum([
 ]);
 
 export type ThemeName = z.infer<typeof ThemeName>;
+
+/** Authored theme colors. Only bg/fg/accent are required; the rest derive. */
+export const ThemeColorSpec = z.object({
+  bg: z.string(),
+  fg: z.string(),
+  accent: z.string(),
+  muted: z.string().optional(),
+  surface: z.string().optional(),
+  border: z.string().optional(),
+  onAccent: z.string().optional(),
+  series: z.array(z.string()).optional(),
+});
+export type ThemeColorSpec = z.infer<typeof ThemeColorSpec>;
+
+export const ThemeFontSpec = z.object({
+  heading: z.string().optional(),
+  body: z.string().optional(),
+  mono: z.string().optional(),
+});
+export type ThemeFontSpec = z.infer<typeof ThemeFontSpec>;
+
+/** A full custom theme spec (resolved to tokens at render time). */
+export const ThemeSpec = z.object({
+  color: ThemeColorSpec,
+  font: ThemeFontSpec.optional(),
+});
+export type ThemeSpec = z.infer<typeof ThemeSpec>;
+
+/** A deck's theme: a built-in name, or a full custom spec. */
+export const ThemeRef = z.union([ThemeName, ThemeSpec]);
+export type ThemeRef = z.infer<typeof ThemeRef>;

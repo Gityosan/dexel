@@ -4,7 +4,7 @@ import type {
   LayoutPattern,
   SlideDeck,
   SlotRole,
-  ThemeName,
+  ThemeRef,
 } from "../ir/index.js";
 import { Slide, SlideDeck as SlideDeckSchema } from "../ir/index.js";
 import {
@@ -41,7 +41,7 @@ export interface LayoutHint {
  * mitigation: a long-running builder never loses track of its options.
  */
 export interface DeckSummary {
-  theme: ThemeName;
+  theme: ThemeRef;
   aspect: Aspect;
   sectionCount: number;
   sections: SectionSummary[];
@@ -125,7 +125,7 @@ export class DeckSession {
 
 /** Create a new builder session (`create_deck`). */
 export function createDeck(opts?: {
-  theme?: ThemeName;
+  theme?: ThemeRef;
   aspect?: Aspect;
 }): DeckSession {
   const deck = SlideDeckSchema.parse({

@@ -21,7 +21,7 @@ import {
 } from "./highlight.js";
 import { insetRect } from "./geometry.js";
 import { resolveDeck } from "../layout/index.js";
-import { bareHex, bestOn, getTheme, type ThemeTokens } from "../theme/index.js";
+import { bareHex, bestOn, resolveDeckTheme, type ThemeTokens } from "../theme/index.js";
 
 /** Resolve a series-palette color (bare hex), wrapping past the palette length. */
 function seriesHex(t: ThemeTokens, i: number): string {
@@ -361,7 +361,7 @@ export async function renderPptx(
   deck: SlideDeck,
   opts?: PptxOptions,
 ): Promise<Buffer> {
-  const t = getTheme(deck.theme);
+  const t = resolveDeckTheme(deck.theme);
   const mermaidSvgs = await prerenderMermaid(deck, opts?.mermaid);
   const highlights = await prehighlightDeck(deck);
   const pptx = new Pptx();

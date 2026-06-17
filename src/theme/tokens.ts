@@ -1,31 +1,10 @@
-import type { ThemeName } from "../ir/index.js";
+import type { ThemeName, ThemeSpec } from "../ir/index.js";
 import { bestOn, mix } from "./color.js";
 
 export interface ThemeFont {
   heading: string;
   body: string;
   mono: string;
-}
-
-/**
- * The colors a theme author provides. Only `bg`, `fg`, and `accent` are
- * required; the neutral ramp (`muted`/`surface`/`border`), `onAccent`, and the
- * categorical `series` are derived when omitted (see `resolveTheme`).
- */
-export interface ThemeColorSpec {
-  bg: string;
-  fg: string;
-  accent: string;
-  muted?: string;
-  surface?: string;
-  border?: string;
-  onAccent?: string;
-  series?: string[];
-}
-
-export interface ThemeSpec {
-  color: ThemeColorSpec;
-  font?: Partial<ThemeFont>;
 }
 
 /**
@@ -146,6 +125,11 @@ export const themes: Record<ThemeName, ThemeTokens> = Object.fromEntries(
 /** Resolve a theme's tokens by name. */
 export function getTheme(name: ThemeName): ThemeTokens {
   return themes[name];
+}
+
+/** Resolve a deck's theme (a built-in name or a custom spec) to tokens. */
+export function resolveDeckTheme(theme: ThemeName | ThemeSpec): ThemeTokens {
+  return typeof theme === "string" ? getTheme(theme) : resolveTheme(theme);
 }
 
 /** Strip a leading "#" from a hex color (pptx wants bare RRGGBB). */

@@ -52,15 +52,19 @@ recolored for contrast.
 
 ## Custom theme
 
-`resolveTheme` accepts any spec; supply only what you want and let the rest
-derive:
+A deck's `theme` accepts either a built-in name **or a full `ThemeSpec`** — supply
+only what you want and let the rest derive:
 
 ```ts
-import { resolveTheme } from "dexel";
-const tokens = resolveTheme({
-  color: { bg: "#0B0B0F", fg: "#EDEDED", accent: "#22D3EE" },
+const deck = SlideDeck.parse({
+  theme: {
+    color: { bg: "#0B0B0F", fg: "#EDEDED", accent: "#22D3EE" },
+    // muted/surface/border/onAccent/series derive; font is optional
+  },
+  slides: [...],
 });
 ```
 
-(Wiring a custom resolved theme into the named-theme registry is not yet exposed;
-the five built-in names are the current selection surface.)
+The same works through the builder (`createDeck({ theme: { color: {...} } })`).
+`resolveTheme(spec)` / `resolveDeckTheme(name | spec)` are exported if you want
+the tokens directly.

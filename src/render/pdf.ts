@@ -13,7 +13,7 @@ import {
   prehighlightDeck,
 } from "./highlight.js";
 import { resolveDeck } from "../layout/index.js";
-import { getTheme, type ThemeTokens } from "../theme/index.js";
+import { resolveDeckTheme, type ThemeTokens } from "../theme/index.js";
 import { type Box, canvasPt, insetRect, placeRect, type Size } from "./geometry.js";
 
 type Doc = InstanceType<typeof PDFDocument>;
@@ -304,7 +304,7 @@ export async function renderPdf(
   deck: SlideDeck,
   opts?: PdfOptions,
 ): Promise<Buffer> {
-  const t = getTheme(deck.theme);
+  const t = resolveDeckTheme(deck.theme);
   const canvas: Size = canvasPt(deck.aspect);
   // Mermaid and syntax highlighting are async, so resolve them before drawing.
   const mermaidSvgs = await prerenderMermaid(deck, opts?.mermaid);

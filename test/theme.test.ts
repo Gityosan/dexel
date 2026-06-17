@@ -53,6 +53,25 @@ describe("resolveTheme", () => {
   });
 });
 
+describe("resolveDeckTheme", () => {
+  it("resolves a built-in name", async () => {
+    const { resolveDeckTheme, getTheme } = await import("../src/index.js");
+    expect(resolveDeckTheme("corporate")).toEqual(getTheme("corporate"));
+  });
+
+  it("resolves a custom spec (deck-level theme object)", async () => {
+    const { resolveDeckTheme, SlideDeck } = await import("../src/index.js");
+    const deck = SlideDeck.parse({
+      theme: { color: { bg: "#0B0B12", fg: "#EDEDED", accent: "#FF0066" } },
+      slides: [],
+    });
+    const t = resolveDeckTheme(deck.theme);
+    expect(t.color.accent).toBe("#FF0066");
+    expect(t.color.surface).toBeTruthy(); // derived
+    expect(t.color.series.length).toBeGreaterThan(0);
+  });
+});
+
 describe("built-in themes", () => {
   it("expose a curated series and derived neutrals", () => {
     const t = getTheme("default");

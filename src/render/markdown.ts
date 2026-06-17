@@ -1,7 +1,7 @@
 import { renderDiagramSvg } from "../diagram/index.js";
 import type { Block, SlideDeck } from "../ir/index.js";
 import { resolveDeck, type ResolvedSlide } from "../layout/index.js";
-import { getTheme, type ThemeTokens } from "../theme/index.js";
+import { resolveDeckTheme, type ThemeTokens } from "../theme/index.js";
 
 /** Layouts whose heading is the top-level (h1) heading rather than a slide title. */
 const TOP_LEVEL_HEADING = new Set(["title", "section-divider"]);
@@ -60,7 +60,7 @@ function blockToMarkdown(
  */
 export function renderMarkdown(deck: SlideDeck): string {
   const slides = resolveDeck(deck);
-  const theme = getTheme(deck.theme);
+  const theme = resolveDeckTheme(deck.theme);
   return slides
     .map((slide) =>
       slide.placements
