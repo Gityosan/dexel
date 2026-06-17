@@ -45,6 +45,13 @@ text block; subheading/body/kpi/code/image/diagram slots take the matching block
 | `code` | `heading:heading`, `code:code` |
 | `code-explain` | `heading:heading`, `code:code`, `explain:body` |
 
+## Custom layouts
+
+`Slide.layout` accepts either a built-in pattern name **or a full inline
+`LayoutTemplate`** (custom `slots` with normalized rects + `flowOrder`) for a
+bespoke arrangement — deck-scoped and serializable. The template's `pattern`
+field still selects title/section styling.
+
 ## Notes
 
 - Coordinates are normalized (0–1) and shared by pptx and pdf; md/html demote via

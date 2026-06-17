@@ -93,7 +93,7 @@ export class DeckSession {
         const resolved = resolveSlide(slide);
         return {
           index,
-          layout: slide.layout,
+          layout: resolved.layout,
           blockCount: slide.blocks.length,
           overflow: resolved.overflow.length,
         };

@@ -59,3 +59,6 @@ Per target:
   `--mermaid`);
 - **pptx** embeds the rendered SVG as a native image (enable with the `mermaid`
   option); otherwise the source text is kept.
+
+When the built-in renderer is used, mermaid is tinted with the deck's theme
+colors (accent → borders, etc.) for brand consistency.

@@ -40,6 +40,27 @@ describe("renderMermaidSvg (headless)", () => {
   }, 30000);
 });
 
+describe("mermaid theme linkage", () => {
+  it("tints diagrams with the deck's accent color", async () => {
+    const { prerenderMermaid, SlideDeck } = await import("../src/index.js");
+    const deck = SlideDeck.parse({
+      theme: { color: { bg: "#FFFFFF", fg: "#101010", accent: "#FF0066" } },
+      slides: [
+        {
+          layout: "title-content",
+          blocks: [
+            { type: "text", variant: "heading", text: "M" },
+            { type: "diagram", kind: "mermaid", slot: "body", source: "graph TD; A-->B;" },
+          ],
+        },
+      ],
+    });
+    const map = await prerenderMermaid(deck, true);
+    const svg = [...map.values()][0] ?? "";
+    expect(svg.toUpperCase()).toContain("FF0066"); // accent → mermaid border
+  }, 30000);
+});
+
 describe("pdf mermaid embedding", () => {
   it("embeds via a custom renderer when provided", async () => {
     let called = "";

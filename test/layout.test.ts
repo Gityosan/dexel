@@ -228,6 +228,28 @@ describe("resolveSlide", () => {
     }
   });
 
+  it("accepts an inline custom layout template", () => {
+    const resolved = resolveSlide(
+      Slide.parse({
+        layout: {
+          pattern: "title-content",
+          slots: [
+            { id: "big", role: "heading", rect: { x: 0.1, y: 0.1, w: 0.8, h: 0.3 } },
+            { id: "sub", role: "body", rect: { x: 0.1, y: 0.5, w: 0.8, h: 0.3 } },
+          ],
+          flowOrder: ["big", "sub"],
+        },
+        blocks: [
+          { type: "text", variant: "heading", text: "Custom" },
+          { type: "text", variant: "body", text: "layout" },
+        ],
+      }),
+    );
+    expect(resolved.layout).toBe("title-content");
+    expect(resolved.placements.map((p) => p.slot.id)).toEqual(["big", "sub"]);
+    expect(resolved.overflow).toHaveLength(0);
+  });
+
   it("reports blocks that do not fit as overflow", () => {
     const slide = Slide.parse({
       layout: "section-divider",

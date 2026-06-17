@@ -2,6 +2,7 @@
   "theme": "corporate",
   "aspect": "16:9",
   "meta": { "title": "dexel デモデッキ", "author": "dexel", "date": "2026-06-15" },
+  "chrome": { "pageNumbers": true, "footer": "© dexel 2026" },
   "slides": [
     {
       "layout": "title",
@@ -202,7 +203,7 @@
           "nodes": [
             { "id": "a", "label": "訪問", "value": 1000 },
             { "id": "b", "label": "登録", "value": 400 },
-            { "id": "c", "label": "課金", "value": 80 }
+            { "id": "c", "label": "課金", "value": 80, "color": "#16A34A" }
           ],
           "edges": []
         }

@@ -61,7 +61,13 @@ export function blockRoles(block: Block): SlotRole[] {
  * slot, then to any free slot. Anything left over becomes overflow.
  */
 export function resolveSlide(slide: Slide): ResolvedSlide {
-  const template = getLayoutTemplate(slide.layout);
+  // `layout` is a built-in pattern name or a full inline template.
+  const template =
+    typeof slide.layout === "string"
+      ? getLayoutTemplate(slide.layout)
+      : slide.layout;
+  const layoutPattern =
+    typeof slide.layout === "string" ? slide.layout : slide.layout.pattern;
   const slotById = new Map(template.slots.map((s) => [s.id, s]));
   const used = new Set<string>();
   const placements: PlacedBlock[] = [];
@@ -108,7 +114,7 @@ export function resolveSlide(slide: Slide): ResolvedSlide {
   );
 
   return {
-    layout: slide.layout,
+    layout: layoutPattern,
     template,
     placements,
     overflow,

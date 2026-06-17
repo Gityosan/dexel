@@ -7,6 +7,7 @@
  * by svg-to-pdfkit. The DOM + mermaid are initialized lazily and once.
  */
 import type { SlideDeck } from "../ir/index.js";
+import { resolveDeckTheme, type ThemeTokens } from "../theme/index.js";
 
 /** Renders mermaid source to an SVG string. */
 export type MermaidRenderer = (source: string) => Promise<string>;
@@ -189,15 +190,41 @@ async function ensureMermaid(): Promise<MermaidModule> {
     }
 
     const mermaid = (await import("mermaid")).default as unknown as MermaidModule;
-    mermaid.initialize({
-      startOnLoad: false,
-      securityLevel: "loose",
-      htmlLabels: false,
-      flowchart: { htmlLabels: false },
-    });
+    mermaid.initialize(BASE_CONFIG);
     return mermaid;
   })();
   return init;
+}
+
+const BASE_CONFIG = {
+  startOnLoad: false,
+  securityLevel: "loose",
+  htmlLabels: false,
+  flowchart: { htmlLabels: false },
+} as const;
+
+/** Map a deck's theme tokens to mermaid theme variables (brand-consistent). */
+function mermaidThemeVars(t: ThemeTokens): Record<string, string> {
+  return {
+    primaryColor: t.color.surface,
+    primaryBorderColor: t.color.accent,
+    primaryTextColor: t.color.fg,
+    lineColor: t.color.muted,
+    secondaryColor: t.color.series[1] ?? t.color.accent,
+    tertiaryColor: t.color.series[2] ?? t.color.surface,
+    background: t.color.bg,
+    fontFamily: t.font.body,
+  };
+}
+
+/** Re-initialize mermaid so diagrams use the deck's colors. */
+async function configureMermaidTheme(t: ThemeTokens): Promise<void> {
+  const mermaid = await ensureMermaid();
+  mermaid.initialize({
+    ...BASE_CONFIG,
+    theme: "base",
+    themeVariables: mermaidThemeVars(t),
+  });
 }
 
 /** The built-in headless mermaid renderer. */
@@ -218,8 +245,14 @@ export async function prerenderMermaid(
 ): Promise<Map<string, string>> {
   const out = new Map<string, string>();
   if (!option) return out;
-  const renderer: MermaidRenderer =
-    typeof option === "function" ? option : renderMermaidSvg;
+  let renderer: MermaidRenderer;
+  if (typeof option === "function") {
+    renderer = option;
+  } else {
+    // Built-in: tint mermaid with the deck's theme colors.
+    await configureMermaidTheme(resolveDeckTheme(deck.theme));
+    renderer = renderMermaidSvg;
+  }
   for (const slide of deck.slides) {
     for (const block of slide.blocks) {
       if (
