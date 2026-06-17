@@ -21,11 +21,28 @@ import {
 } from "./highlight.js";
 import { insetRect } from "./geometry.js";
 import { resolveDeck } from "../layout/index.js";
-import { bareHex, bestOn, resolveDeckTheme, type ThemeTokens } from "../theme/index.js";
+import {
+  bareHex,
+  bestOn,
+  resolveDeckTheme,
+  themeColor,
+  type ThemeTokens,
+} from "../theme/index.js";
 
 /** Resolve a series-palette color (bare hex), wrapping past the palette length. */
 function seriesHex(t: ThemeTokens, i: number): string {
   return bareHex(t.color.series[i % t.color.series.length]!);
+}
+
+/** Node fill (bare hex): explicit color > series palette > undefined. */
+function nodeHex(
+  t: ThemeTokens,
+  color: string | undefined,
+  seriesIndex: number | undefined,
+): string | undefined {
+  if (color) return bareHex(themeColor(t, color, t.color.accent));
+  if (seriesIndex !== undefined) return seriesHex(t, seriesIndex);
+  return undefined;
 }
 
 type Pct = `${number}%`;
@@ -69,7 +86,7 @@ function drawStructuredDiagram(
 ): void {
   for (const s of layoutDiagram(block)) {
     if (s.kind === "box") {
-      const series = s.seriesIndex !== undefined ? seriesHex(t, s.seriesIndex) : undefined;
+      const series = nodeHex(t, s.color, s.seriesIndex);
       slide.addText(s.label, {
         x: pct(rect.x + s.x * rect.w),
         y: pct(rect.y + s.y * rect.h),
@@ -89,7 +106,7 @@ function drawStructuredDiagram(
         fontFace: t.font.body,
       });
     } else if (s.kind === "ellipse") {
-      const color = s.seriesIndex !== undefined ? seriesHex(t, s.seriesIndex) : bareHex(t.color.accent);
+      const color = nodeHex(t, s.color, s.seriesIndex) ?? bareHex(t.color.accent);
       slide.addShape(shapes.ellipse, {
         x: pct(rect.x + (s.cx - s.rx) * rect.w),
         y: pct(rect.y + (s.cy - s.ry) * rect.h),
@@ -117,8 +134,7 @@ function drawStructuredDiagram(
       // Polygon (funnel trapezoid) → native custom geometry. OOXML path
       // coordinates are local to the shape, so work in inches from the shape's
       // top-left rather than slide percentages.
-      const color =
-        s.seriesIndex !== undefined ? seriesHex(t, s.seriesIndex) : bareHex(t.color.accent);
+      const color = nodeHex(t, s.color, s.seriesIndex) ?? bareHex(t.color.accent);
       const sp = s.points.map(
         ([px, py]) => [rect.x + px * rect.w, rect.y + py * rect.h] as const,
       );
@@ -177,15 +193,20 @@ function addBlock(
   const muted = bareHex(t.color.muted);
 
   switch (block.type) {
-    case "text":
+    case "text": {
+      const override = block.color
+        ? bareHex(themeColor(t, block.color, t.color.fg))
+        : undefined;
+      const alignOpt = block.align ? { align: block.align } : {};
       switch (block.variant) {
         case "heading":
           slide.addText(block.text, {
             ...p,
             valign,
+            ...alignOpt,
             bold: true,
             fontSize: isTitleLayout ? 40 : 30,
-            color: isTitleLayout ? accent : fg,
+            color: override ?? (isTitleLayout ? accent : fg),
             fontFace: t.font.heading,
           });
           return;
@@ -193,8 +214,9 @@ function addBlock(
           slide.addText(block.text, {
             ...p,
             valign,
+            ...alignOpt,
             fontSize: 22,
-            color: muted,
+            color: override ?? muted,
             fontFace: t.font.heading,
           });
           return;
@@ -202,12 +224,14 @@ function addBlock(
           slide.addText(block.text, {
             ...p,
             valign,
+            ...alignOpt,
             fontSize: 18,
-            color: fg,
+            color: override ?? fg,
             fontFace: t.font.body,
           });
           return;
       }
+    }
     case "list":
       slide.addText(
         block.items.map((item) => ({

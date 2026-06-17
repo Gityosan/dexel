@@ -40,6 +40,8 @@ export const DiagramNode = z.object({
   level: z.number().int().min(0).optional(),
   date: z.string().optional(),
   parent: z.string().optional(),
+  /** Override color: a theme token name (accent/series/…) or a raw hex. */
+  color: z.string().optional(),
 });
 
 export type DiagramNode = z.infer<typeof DiagramNode>;

@@ -136,3 +136,30 @@ export function resolveDeckTheme(theme: ThemeName | ThemeSpec): ThemeTokens {
 export function bareHex(hex: string): string {
   return hex.startsWith("#") ? hex.slice(1) : hex;
 }
+
+const NAMED_COLORS = new Set([
+  "bg",
+  "fg",
+  "accent",
+  "onAccent",
+  "muted",
+  "surface",
+  "border",
+]);
+
+/**
+ * Resolve a color reference from a block/node: a theme token name
+ * (accent/muted/fg/…) maps to the theme; anything else is treated as a raw
+ * color. Returns `fallback` when no reference is given.
+ */
+export function themeColor(
+  t: ThemeTokens,
+  ref: string | undefined,
+  fallback: string,
+): string {
+  if (!ref) return fallback;
+  if (NAMED_COLORS.has(ref)) {
+    return (t.color as unknown as Record<string, string>)[ref] ?? fallback;
+  }
+  return ref;
+}

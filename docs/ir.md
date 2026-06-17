@@ -37,7 +37,7 @@ id to bind to).
 
 | `type` | fields |
 |---|---|
-| `text` | `variant: heading \| subheading \| body \| paragraph` (default `body`), `text` |
+| `text` | `variant: heading \| subheading \| body \| paragraph` (default `body`), `text`, `color?` (token name or hex), `align?` |
 | `list` | `ordered` (default false), `items: { text, level }[]` |
 | `code` | `language?`, `filename?` (shown as a tab), `code`, `showLineNumbers` (default false) |
 | `image` | `src` (file path or data URI), `alt?`, `fit: contain \| cover` |
@@ -57,7 +57,7 @@ id to bind to).
 ```
 
 ```ts
-DiagramNode = { id, label, group?, value?, level?, date?, parent? }
+DiagramNode = { id, label, group?, value?, level?, date?, parent?, color? }
 DiagramEdge = { from, to, label? }
 ```
 

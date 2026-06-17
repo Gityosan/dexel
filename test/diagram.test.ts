@@ -173,6 +173,32 @@ describe("dedicated diagram layouts", () => {
     expect(polys[0]!.kind === "polygon" && polys[0]!.label).toContain("100");
   });
 
+  it("honors an explicit node color over the series palette", () => {
+    const shapes = layoutDiagram(
+      diagram({
+        pattern: "funnel",
+        nodes: [
+          { id: "a", label: "A", value: 100 },
+          { id: "b", label: "B", value: 40, color: "#FF0000" },
+        ],
+        edges: [],
+      }),
+    );
+    const polys = shapes.filter((s) => s.kind === "polygon");
+    expect(polys[1]!.kind === "polygon" && polys[1]!.color).toBe("#FF0000");
+    const svg = renderDiagramSvg(
+      diagram({
+        pattern: "funnel",
+        nodes: [
+          { id: "a", label: "A", value: 100 },
+          { id: "b", label: "B", value: 40, color: "#FF0000" },
+        ],
+        edges: [],
+      }),
+    );
+    expect(svg).toContain("#FF0000");
+  });
+
   it("funnel: horizontal orientation lays steps left-to-right", () => {
     const polys = layoutDiagram(
       diagram({

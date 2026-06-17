@@ -7,6 +7,7 @@ import {
 } from "../diagram/index.js";
 import type { Block, SlideDeck, VAnchor } from "../ir/index.js";
 import { bundledJpFontPath } from "./fonts.js";
+import { themeColor } from "../theme/index.js";
 import {
   type HighlightedCode,
   lookupHighlight,
@@ -102,34 +103,42 @@ function drawBlock(
   highlights: Map<string, HighlightedCode>,
 ): void {
   switch (block.type) {
-    case "text":
+    case "text": {
+      const override = block.color
+        ? themeColor(t, block.color, t.color.fg)
+        : undefined;
+      const align = block.align;
       switch (block.variant) {
         case "heading":
           drawText(doc, block.text, box, {
             font: f.heading,
             size: isTitleLayout ? 40 : 30,
-            color: isTitleLayout ? t.color.accent : t.color.fg,
+            color: override ?? (isTitleLayout ? t.color.accent : t.color.fg),
             vAnchor,
             bold: true,
+            align,
           });
           return;
         case "subheading":
           drawText(doc, block.text, box, {
             font: f.heading,
             size: 22,
-            color: t.color.muted,
+            color: override ?? t.color.muted,
             vAnchor,
+            align,
           });
           return;
         default:
           drawText(doc, block.text, box, {
             font: f.body,
             size: 18,
-            color: t.color.fg,
+            color: override ?? t.color.fg,
             vAnchor,
+            align,
           });
           return;
       }
+    }
     case "list": {
       const lines = block.items
         .map((item, i) => {

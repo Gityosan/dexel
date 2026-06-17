@@ -12,6 +12,8 @@ export interface DiagBox {
   plain?: boolean;
   /** Index into the theme's categorical `series` palette (categorical patterns). */
   seriesIndex?: number;
+  /** Explicit color override (theme token name or raw color). */
+  color?: string;
 }
 
 /** A laid-out connector/axis line, in normalized 0–1 coordinates. */
@@ -35,6 +37,8 @@ export interface DiagEllipse {
   fillOpacity: number;
   /** Index into the theme's categorical `series` palette. */
   seriesIndex?: number;
+  /** Explicit color override (theme token name or raw color). */
+  color?: string;
 }
 
 export type DiagShape = DiagBox | DiagLine | DiagEllipse | DiagPolygon;
@@ -45,6 +49,8 @@ export interface DiagPolygon {
   points: Array<[number, number]>;
   label?: string;
   seriesIndex?: number;
+  /** Explicit color override (theme token name or raw color). */
+  color?: string;
 }
 
 const box = (
@@ -53,7 +59,7 @@ const box = (
   w: number,
   h: number,
   label: string,
-  opts: { plain?: boolean; series?: number } = {},
+  opts: { plain?: boolean; series?: number; color?: string } = {},
 ): DiagBox => ({
   kind: "box",
   x,
@@ -63,6 +69,7 @@ const box = (
   label,
   ...(opts.plain ? { plain: true } : {}),
   ...(opts.series !== undefined ? { seriesIndex: opts.series } : {}),
+  ...(opts.color ? { color: opts.color } : {}),
 });
 
 const line = (
@@ -80,6 +87,7 @@ const ellipse = (
   ry: number,
   fillOpacity: number,
   series?: number,
+  color?: string,
 ): DiagEllipse => ({
   kind: "ellipse",
   cx,
@@ -88,6 +96,7 @@ const ellipse = (
   ry,
   fillOpacity,
   ...(series !== undefined ? { seriesIndex: series } : {}),
+  ...(color ? { color } : {}),
 });
 
 const clamp = (v: number, lo: number, hi: number) =>
@@ -109,7 +118,7 @@ function flow(d: StructuredDiagram): DiagShape[] {
   const laneAbove = Math.max(0.03, y - 0.08);
 
   const boxes: DiagShape[] = d.nodes.map((node, i) =>
-    box(xOf(i), y, bw, bh, node.label),
+    box(xOf(i), y, bw, bh, node.label, { color: node.color }),
   );
 
   const indexOf = new Map(d.nodes.map((node, i) => [node.id, i]));
@@ -165,6 +174,7 @@ function matrix2x2(d: StructuredDiagram): DiagShape[] {
     const q = quads[i]!;
     return box(q.x + inset, q.y + inset, w / 2 - 2 * inset, h / 2 - 2 * inset, node.label, {
       series: i,
+      color: node.color,
     });
   });
   return [...axes, ...cells];
@@ -188,7 +198,7 @@ function funnel(d: StructuredDiagram): DiagShape[] {
   );
   const sizeAt = (i: number) => min + (max - min) * (values[i]! / maxV);
 
-  return d.nodes.map((_, i) => {
+  return d.nodes.map((node, i) => {
     const a = sizeAt(i);
     const b = i < n - 1 ? sizeAt(i + 1) : a; // last stage: flat bottom/right
     let points: Array<[number, number]>;
@@ -213,7 +223,13 @@ function funnel(d: StructuredDiagram): DiagShape[] {
         [0.5 - b / 2, y1],
       ];
     }
-    return { kind: "polygon", points, label: labels[i]!, seriesIndex: i };
+    return {
+      kind: "polygon",
+      points,
+      label: labels[i]!,
+      seriesIndex: i,
+      ...(node.color ? { color: node.color } : {}),
+    };
   });
 }
 
@@ -230,7 +246,7 @@ function pyramid(d: StructuredDiagram): DiagShape[] {
   return nodes.map((nd, i) => {
     const w = n === 1 ? wMax : wMin + (wMax - wMin) * (i / (n - 1));
     const y = PAD + i * (rowH + gap);
-    return box((1 - w) / 2, y, w, rowH, nd.label, { series: i });
+    return box((1 - w) / 2, y, w, rowH, nd.label, { series: i, color: nd.color });
   });
 }
 
@@ -251,7 +267,7 @@ function timeline(d: StructuredDiagram): DiagShape[] {
     const x = clamp(cx - bw / 2, 0, 1 - bw);
     shapes.push(line(cx, axisY, cx, above ? by + bh : by, false));
     const label = nd.date !== undefined ? `${nd.date}\n${nd.label}` : nd.label;
-    shapes.push(box(x, by, bw, bh, label));
+    shapes.push(box(x, by, bw, bh, label, { color: nd.color }));
   });
   return shapes;
 }
@@ -275,7 +291,7 @@ function cycle(d: StructuredDiagram): DiagShape[] {
   }
   d.nodes.forEach((nd, i) => {
     const p = pts[i]!;
-    shapes.push(box(p.x - bw / 2, p.y - bh / 2, bw, bh, nd.label, { series: i }));
+    shapes.push(box(p.x - bw / 2, p.y - bh / 2, bw, bh, nd.label, { series: i, color: nd.color }));
   });
   return shapes;
 }
@@ -329,7 +345,7 @@ function tree(d: StructuredDiagram): DiagShape[] {
   }
   for (const nd of d.nodes) {
     const b = pos.get(nd.id);
-    if (b) shapes.push(box(b.x, b.y, b.w, b.h, nd.label));
+    if (b) shapes.push(box(b.x, b.y, b.w, b.h, nd.label, { color: nd.color }));
   }
   return shapes;
 }
@@ -347,7 +363,7 @@ function venn(d: StructuredDiagram): DiagShape[] {
       { x: 0.72, y: 0.42 },
     ];
     d.nodes.slice(0, 2).forEach((nd, i) => {
-      shapes.push(ellipse(circles[i]!.cx, circles[i]!.cy, 0.27, 0.27, op, i));
+      shapes.push(ellipse(circles[i]!.cx, circles[i]!.cy, 0.27, 0.27, op, i, nd.color));
       shapes.push(box(labels[i]!.x, labels[i]!.y, 0.2, 0.16, nd.label, { plain: true }));
     });
   } else {
@@ -362,7 +378,7 @@ function venn(d: StructuredDiagram): DiagShape[] {
       { x: 0.7, y: 0.72 },
     ];
     d.nodes.slice(0, 3).forEach((nd, i) => {
-      shapes.push(ellipse(circles[i]!.cx, circles[i]!.cy, 0.25, 0.25, op, i));
+      shapes.push(ellipse(circles[i]!.cx, circles[i]!.cy, 0.25, 0.25, op, i, nd.color));
       shapes.push(box(labels[i]!.x, labels[i]!.y, 0.2, 0.14, nd.label, { plain: true }));
     });
   }
@@ -374,7 +390,7 @@ function stack(d: StructuredDiagram): DiagShape[] {
   const gap = 0.03;
   const bh = Math.min(0.18, (1 - 2 * PAD - (n - 1) * gap) / n);
   return d.nodes.map((node, i) =>
-    box(PAD, PAD + i * (bh + gap), 1 - 2 * PAD, bh, node.label),
+    box(PAD, PAD + i * (bh + gap), 1 - 2 * PAD, bh, node.label, { color: node.color }),
   );
 }
 

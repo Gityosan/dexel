@@ -1,11 +1,22 @@
 import type { DiagBox, DiagEllipse, DiagLine, DiagPolygon } from "./layout.js";
 import { layoutDiagram } from "./layout.js";
 import type { DiagramBlock } from "../ir/index.js";
-import { bestOn, getTheme, type ThemeTokens } from "../theme/index.js";
+import { bestOn, getTheme, themeColor, type ThemeTokens } from "../theme/index.js";
 
 /** Resolve a series-palette color, wrapping if there are more items than colors. */
 function seriesColor(t: ThemeTokens, i: number): string {
   return t.color.series[i % t.color.series.length]!;
+}
+
+/** The fill color for a node shape: explicit color > series palette > undefined. */
+function shapeFill(
+  t: ThemeTokens,
+  color: string | undefined,
+  seriesIndex: number | undefined,
+): string | undefined {
+  if (color) return themeColor(t, color, t.color.accent);
+  if (seriesIndex !== undefined) return seriesColor(t, seriesIndex);
+  return undefined;
 }
 
 /** The structured (node/edge) variant of a diagram block. */
@@ -46,11 +57,10 @@ function svgBox(b: DiagBox, ctx: Ctx): string {
   let rect = "";
   let textColor = ctx.t.color.fg;
   if (!b.plain) {
-    const series =
-      b.seriesIndex !== undefined ? seriesColor(ctx.t, b.seriesIndex) : undefined;
-    const fill = series ?? ctx.t.color.bg;
-    const stroke = series ?? ctx.t.color.accent;
-    if (series) textColor = bestOn(series);
+    const filled = shapeFill(ctx.t, b.color, b.seriesIndex);
+    const fill = filled ?? ctx.t.color.bg;
+    const stroke = filled ?? ctx.t.color.accent;
+    if (filled) textColor = bestOn(filled);
     rect = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
   }
   return [
@@ -61,10 +71,7 @@ function svgBox(b: DiagBox, ctx: Ctx): string {
 }
 
 function svgEllipse(e: DiagEllipse, ctx: Ctx): string {
-  const color =
-    e.seriesIndex !== undefined
-      ? seriesColor(ctx.t, e.seriesIndex)
-      : ctx.t.color.accent;
+  const color = shapeFill(ctx.t, e.color, e.seriesIndex) ?? ctx.t.color.accent;
   return [
     `<ellipse cx="${e.cx * ctx.w}" cy="${e.cy * ctx.h}" `,
     `rx="${e.rx * ctx.w}" ry="${e.ry * ctx.h}" `,
@@ -83,10 +90,7 @@ function svgLine(l: DiagLine, ctx: Ctx): string {
 }
 
 function svgPolygon(p: DiagPolygon, ctx: Ctx): string {
-  const color =
-    p.seriesIndex !== undefined
-      ? seriesColor(ctx.t, p.seriesIndex)
-      : ctx.t.color.accent;
+  const color = shapeFill(ctx.t, p.color, p.seriesIndex) ?? ctx.t.color.accent;
   const pts = p.points
     .map(([x, y]) => `${x * ctx.w},${y * ctx.h}`)
     .join(" ");

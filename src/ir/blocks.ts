@@ -21,6 +21,9 @@ export const TextBlock = z.object({
     .enum(["heading", "subheading", "body", "paragraph"])
     .default("body"),
   text: z.string(),
+  /** Override color: a theme token name (accent/muted/fg/…) or a raw hex. */
+  color: z.string().optional(),
+  align: z.enum(["left", "center", "right"]).optional(),
 });
 
 export type TextBlock = z.infer<typeof TextBlock>;
