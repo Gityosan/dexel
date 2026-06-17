@@ -1,6 +1,7 @@
 import type {
   Aspect,
   BlockInput,
+  DeckChrome,
   LayoutPattern,
   SlideDeck,
   SlotRole,
@@ -127,10 +128,12 @@ export class DeckSession {
 export function createDeck(opts?: {
   theme?: ThemeRef;
   aspect?: Aspect;
+  chrome?: DeckChrome;
 }): DeckSession {
   const deck = SlideDeckSchema.parse({
     theme: opts?.theme,
     aspect: opts?.aspect,
+    chrome: opts?.chrome,
     slides: [],
   });
   return new DeckSession(deck);

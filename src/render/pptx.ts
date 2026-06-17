@@ -395,8 +395,9 @@ export async function renderPptx(
   if (deck.meta?.title) pptx.title = deck.meta.title;
   if (deck.meta?.author) pptx.author = deck.meta.author;
   const shapes = pptx.ShapeType;
+  const resolvedSlides = resolveDeck(deck);
 
-  for (const resolved of resolveDeck(deck)) {
+  resolvedSlides.forEach((resolved, index) => {
     const slide = pptx.addSlide();
     slide.background = { color: bareHex(t.color.bg) };
     if (resolved.notes) slide.addNotes(resolved.notes);
@@ -426,7 +427,44 @@ export async function renderPptx(
         canvasIn,
       );
     }
-  }
+    if (deck.chrome && !isTitleLayout) {
+      drawChrome(slide, deck.chrome, index + 1, resolvedSlides.length, t);
+    }
+  });
 
   return (await pptx.write({ outputType: "nodebuffer" })) as Buffer;
+}
+
+/** Page number / footer / logo on a content slide. */
+function drawChrome(
+  slide: PptxSlide,
+  chrome: NonNullable<SlideDeck["chrome"]>,
+  page: number,
+  total: number,
+  t: ThemeTokens,
+): void {
+  const muted = bareHex(t.color.muted);
+  if (chrome.footer) {
+    slide.addText(chrome.footer, {
+      x: "4%", y: "94.5%", w: "60%", h: "4%",
+      fontSize: 9, color: muted, align: "left", fontFace: t.font.body,
+    });
+  }
+  if (chrome.pageNumbers) {
+    slide.addText(`${page} / ${total}`, {
+      x: "80%", y: "94.5%", w: "16%", h: "4%",
+      fontSize: 9, color: muted, align: "right", fontFace: t.font.body,
+    });
+  }
+  if (chrome.logo) {
+    if (chrome.logo.startsWith("data:") || existsSync(chrome.logo)) {
+      slide.addImage({
+        x: "88%", y: "3%", w: "9%", h: "8%",
+        ...(chrome.logo.startsWith("data:")
+          ? { data: chrome.logo.replace(/^data:/, "") }
+          : { path: chrome.logo }),
+        sizing: { type: "contain", w: 0, h: 0 },
+      });
+    }
+  }
 }

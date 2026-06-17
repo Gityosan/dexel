@@ -7,14 +7,17 @@ defaults and validation; every renderer consumes the parsed deck.
 
 ```ts
 SlideDeck = {
-  theme: ThemeName        // default "default"
-  aspect: "16:9" | "4:3"  // default "16:9"
+  theme: ThemeName | ThemeSpec  // default "default" (see themes.md)
+  aspect: "16:9" | "4:3"        // default "16:9"
   meta?: { title?, author?, date? }
+  chrome?: { pageNumbers?, footer?, logo? }  // drawn on content slides
   slides: Slide[]
 }
 ```
 
-`ThemeName` ∈ `default | dark | corporate | minimal | vivid`.
+`ThemeName` ∈ `default | dark | corporate | minimal | vivid`, or a full custom
+`ThemeSpec`. `chrome` adds page numbers / a footer / a top-right logo to every
+content slide (not title / section-divider).
 
 ## Slide
 

@@ -336,7 +336,8 @@ export async function renderPdf(
     doc.on("error", reject);
   });
 
-  for (const resolved of resolveDeck(deck)) {
+  const resolvedSlides = resolveDeck(deck);
+  resolvedSlides.forEach((resolved, index) => {
     doc.addPage({ size: [canvas.w, canvas.h], margin: 0 });
     doc.rect(0, 0, canvas.w, canvas.h).fill(t.color.bg);
     const isTitleLayout =
@@ -369,8 +370,54 @@ export async function renderPdf(
         highlights,
       );
     }
-  }
+    if (deck.chrome && !isTitleLayout) {
+      drawChrome(doc, deck.chrome, index + 1, resolvedSlides.length, t, f, canvas);
+    }
+  });
 
   doc.end();
   return done;
+}
+
+/** Page number / footer / logo on a content slide. */
+function drawChrome(
+  doc: Doc,
+  chrome: NonNullable<SlideDeck["chrome"]>,
+  page: number,
+  total: number,
+  t: ThemeTokens,
+  f: ResolvedFonts,
+  canvas: Size,
+): void {
+  const y = canvas.h * 0.945;
+  const h = canvas.h * 0.04;
+  if (chrome.footer) {
+    drawText(doc, chrome.footer, { x: canvas.w * 0.04, y, w: canvas.w * 0.6, h }, {
+      font: f.body,
+      size: 9,
+      color: t.color.muted,
+      align: "left",
+    });
+  }
+  if (chrome.pageNumbers) {
+    drawText(doc, `${page} / ${total}`, { x: canvas.w * 0.8, y, w: canvas.w * 0.16, h }, {
+      font: f.body,
+      size: 9,
+      color: t.color.muted,
+      align: "right",
+    });
+  }
+  if (chrome.logo) {
+    try {
+      const src = chrome.logo.startsWith("data:")
+        ? Buffer.from(chrome.logo.slice(chrome.logo.indexOf(",") + 1), "base64")
+        : chrome.logo;
+      doc.image(src, canvas.w * 0.88, canvas.h * 0.03, {
+        fit: [canvas.w * 0.09, canvas.h * 0.08],
+        align: "right",
+      });
+    } catch {
+      /* missing logo → skip */
+    }
+  }
 }

@@ -171,6 +171,32 @@ describe("missing image falls back to a placeholder", () => {
   });
 });
 
+describe("deck chrome (page numbers / footer)", () => {
+  it("draws chrome on content slides but not the title", async () => {
+    const deck = SlideDeck.parse({
+      chrome: { pageNumbers: true, footer: "© dexel" },
+      slides: [
+        { layout: "title", blocks: [{ type: "text", variant: "heading", text: "T" }] },
+        {
+          layout: "title-content",
+          blocks: [
+            { type: "text", variant: "heading", text: "H" },
+            { type: "text", variant: "body", text: "x" },
+          ],
+        },
+      ],
+    });
+    const zip = await JSZip.loadAsync(await renderPptx(deck));
+    const title = await zip.file("ppt/slides/slide1.xml")!.async("string");
+    const content = await zip.file("ppt/slides/slide2.xml")!.async("string");
+    expect(title).not.toContain("1 / 2");
+    expect(content).toContain("2 / 2");
+    expect(content).toContain("© dexel");
+    const pdf = await renderPdf(deck);
+    expect(pdf.subarray(0, 5).toString("latin1")).toBe("%PDF-");
+  });
+});
+
 describe("series palette wraps around", () => {
   it("reuses series[0] for the 7th categorical item", () => {
     const seven = Array.from({ length: 7 }, (_, i) => ({

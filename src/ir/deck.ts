@@ -16,11 +16,22 @@ export const DeckMeta = z.object({
 
 export type DeckMeta = z.infer<typeof DeckMeta>;
 
+/** Deck chrome drawn on content slides (not title / section-divider). */
+export const DeckChrome = z.object({
+  pageNumbers: z.boolean().default(false),
+  footer: z.string().optional(),
+  /** Logo image (file path or data URI), placed top-right. */
+  logo: z.string().optional(),
+});
+
+export type DeckChrome = z.infer<typeof DeckChrome>;
+
 /** The whole deck: the root of the intermediate representation. */
 export const SlideDeck = z.object({
   theme: ThemeRef.default("default"),
   aspect: Aspect.default("16:9"),
   meta: DeckMeta.optional(),
+  chrome: DeckChrome.optional(),
   slides: z.array(Slide),
 });
 
