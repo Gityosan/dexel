@@ -63,11 +63,22 @@ function svgBox(b: DiagBox, ctx: Ctx): string {
     if (filled) textColor = bestOn(filled);
     rect = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
   }
-  return [
-    rect,
-    `<text x="${x + w / 2}" y="${y + h / 2}" fill="${textColor}" font-size="16" `,
-    `text-anchor="middle" dominant-baseline="central">${escapeXml(b.label)}</text>`,
-  ].join("");
+  return rect + svgLabel(b.label, x + w / 2, y + h / 2, textColor);
+}
+
+/** A centered text label, wrapping `\n` into tspans (SVG has no auto line break). */
+function svgLabel(label: string, cx: number, cy: number, fill: string): string {
+  const lines = label.split("\n");
+  const open = `<text x="${cx}" y="${cy}" fill="${fill}" font-size="16" text-anchor="middle" dominant-baseline="central">`;
+  if (lines.length === 1) return `${open}${escapeXml(label)}</text>`;
+  const lh = 18;
+  const body = lines
+    .map(
+      (ln, i) =>
+        `<tspan x="${cx}" dy="${i === 0 ? -((lines.length - 1) / 2) * lh : lh}">${escapeXml(ln)}</tspan>`,
+    )
+    .join("");
+  return `${open}${body}</text>`;
 }
 
 function svgEllipse(e: DiagEllipse, ctx: Ctx): string {

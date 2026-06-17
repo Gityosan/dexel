@@ -30,6 +30,21 @@ describe("renderDiagramSvg", () => {
     expect(svg).toContain(">B<");
   });
 
+  it("wraps newline labels into tspans (SVG has no auto line break)", () => {
+    const svg = renderDiagramSvg(
+      diagram({
+        pattern: "flow",
+        nodes: [
+          { id: "a", label: "Step 1\ndetail" },
+          { id: "b", label: "Step 2\ndetail" },
+        ],
+        edges: [{ from: "a", to: "b" }],
+      }),
+    );
+    expect((svg.match(/<tspan/g) ?? []).length).toBe(4);
+    expect(svg).toContain(">detail</tspan>");
+  });
+
   it("draws an arrow for flow edges", () => {
     expect(renderDiagramSvg(diagram({}))).toContain("marker-end=\"url(#arrow)\"");
   });

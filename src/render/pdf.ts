@@ -280,7 +280,13 @@ function drawBlock(
           height: box.h,
           theme: t,
         });
-        SVGtoPDF(doc, svg, box.x, box.y, { width: box.w, height: box.h });
+        // svg-to-pdfkit draws SVG <text> with the doc's font; force the embedded
+        // (CJK-capable) body font so Japanese diagram labels render.
+        SVGtoPDF(doc, svg, box.x, box.y, {
+          width: box.w,
+          height: box.h,
+          fontCallback: () => f.body,
+        });
         return;
       }
       {
@@ -290,6 +296,7 @@ function drawBlock(
             width: box.w,
             height: box.h,
             preserveAspectRatio: "xMidYMid meet",
+            fontCallback: () => f.body,
           });
           return;
         }
