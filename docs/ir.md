@@ -40,7 +40,7 @@ id to bind to).
 
 | `type` | fields |
 |---|---|
-| `text` | `variant: heading \| subheading \| body \| paragraph` (default `body`), `text`, `color?` (token name or hex), `align?` |
+| `text` | `variant: heading \| subheading \| body \| paragraph` (default `body`), `text` (a string **or rich runs** `{ text, bold?, italic?, color?, highlight? }[]`), `color?` (token name or hex), `align?` |
 | `list` | `ordered` (default false), `items: { text, level }[]` |
 | `code` | `language?`, `filename?` (shown as a tab), `code`, `showLineNumbers` (default false) |
 | `image` | `src` (file path or data URI), `alt?`, `fit: contain \| cover` |

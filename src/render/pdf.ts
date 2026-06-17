@@ -5,7 +5,13 @@ import {
   prerenderMermaid,
   renderDiagramSvg,
 } from "../diagram/index.js";
-import type { Block, SlideDeck, VAnchor } from "../ir/index.js";
+import {
+  textRuns,
+  type Block,
+  type SlideDeck,
+  type TextRun,
+  type VAnchor,
+} from "../ir/index.js";
 import { bundledJpFontPath } from "./fonts.js";
 import { themeColor } from "../theme/index.js";
 import {
@@ -112,6 +118,50 @@ function drawText(doc: Doc, text: string, box: Box, o: TextOpts): void {
   }
 }
 
+/**
+ * Draw rich inline runs on a single (auto-fit) line: per-run color, faux-bold,
+ * and a highlight/marker background rect. Used for headings/emphasis with mixed
+ * formatting; covers the common single-line case.
+ */
+function drawRuns(
+  doc: Doc,
+  runs: TextRun[],
+  box: Box,
+  o: TextOpts & { t: ThemeTokens },
+): void {
+  const plain = runs.map((r) => r.text).join("");
+  const size = fitSize(doc, plain, o.font, box, o.size);
+  doc.font(o.font).fontSize(size);
+  const lineH = doc.currentLineHeight();
+  const totalW = runs.reduce((w, r) => w + doc.widthOfString(r.text), 0);
+  const align = o.align ?? "left";
+  let x =
+    align === "center"
+      ? box.x + Math.max(0, (box.w - totalW) / 2)
+      : align === "right"
+        ? box.x + Math.max(0, box.w - totalW)
+        : box.x;
+  let y = box.y;
+  if (o.vAnchor === "center") y = box.y + Math.max(0, (box.h - lineH) / 2);
+  else if (o.vAnchor === "bottom") y = box.y + Math.max(0, box.h - lineH);
+
+  for (const r of runs) {
+    const w = doc.widthOfString(r.text);
+    if (r.highlight) {
+      doc
+        .save()
+        .rect(x, y, w, lineH)
+        .fillColor(themeColor(o.t, r.highlight, o.t.color.accent))
+        .fill()
+        .restore();
+    }
+    doc.fillColor(r.color ? themeColor(o.t, r.color, o.color) : o.color);
+    doc.text(r.text, x, y, { lineBreak: false });
+    if (o.bold || r.bold) doc.text(r.text, x + 0.4, y, { lineBreak: false });
+    x += w;
+  }
+}
+
 function drawBlock(
   doc: Doc,
   block: Block,
@@ -129,36 +179,38 @@ function drawBlock(
         ? themeColor(t, block.color, t.color.fg)
         : undefined;
       const align = block.align;
-      switch (block.variant) {
-        case "heading":
-          drawText(doc, block.text, box, {
-            font: f.heading,
-            size: isTitleLayout ? t.type.title : t.type.heading,
-            color: override ?? (isTitleLayout ? t.color.accent : t.color.fg),
-            vAnchor,
-            bold: true,
-            align,
-          });
-          return;
-        case "subheading":
-          drawText(doc, block.text, box, {
-            font: f.heading,
-            size: t.type.subheading,
-            color: override ?? t.color.muted,
-            vAnchor,
-            align,
-          });
-          return;
-        default:
-          drawText(doc, block.text, box, {
-            font: f.body,
-            size: t.type.body,
-            color: override ?? t.color.fg,
-            vAnchor,
-            align,
-          });
-          return;
-      }
+      const opts: TextOpts =
+        block.variant === "heading"
+          ? {
+              font: f.heading,
+              size: isTitleLayout ? t.type.title : t.type.heading,
+              color: override ?? (isTitleLayout ? t.color.accent : t.color.fg),
+              vAnchor,
+              bold: true,
+              align,
+            }
+          : block.variant === "subheading"
+            ? {
+                font: f.heading,
+                size: t.type.subheading,
+                color: override ?? t.color.muted,
+                vAnchor,
+                align,
+              }
+            : {
+                font: f.body,
+                size: t.type.body,
+                color: override ?? t.color.fg,
+                vAnchor,
+                align,
+              };
+      const runs = textRuns(block.text);
+      const rich = runs.some(
+        (r) => r.bold || r.italic || r.color || r.highlight,
+      );
+      if (rich) drawRuns(doc, runs, box, { ...opts, t });
+      else drawText(doc, runs.map((r) => r.text).join(""), box, opts);
+      return;
     }
     case "list": {
       const lines = block.items

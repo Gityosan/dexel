@@ -14,17 +14,40 @@ import {
 const slot = z.string().optional();
 
 /** Heading / subheading / body / paragraph text. */
+/** An inline run of text with optional formatting (for rich text). */
+export const TextRun = z.object({
+  text: z.string(),
+  bold: z.boolean().optional(),
+  italic: z.boolean().optional(),
+  /** Text color: a theme token name (accent/muted/…) or a raw hex. */
+  color: z.string().optional(),
+  /** Marker/highlight background: a token name or raw hex. */
+  highlight: z.string().optional(),
+});
+export type TextRun = z.infer<typeof TextRun>;
+
 export const TextBlock = z.object({
   type: z.literal("text"),
   slot,
   variant: z
     .enum(["heading", "subheading", "body", "paragraph"])
     .default("body"),
-  text: z.string(),
+  /** Plain string, or rich inline runs (bold/italic/color/highlight). */
+  text: z.union([z.string(), z.array(TextRun)]),
   /** Override color: a theme token name (accent/muted/fg/…) or a raw hex. */
   color: z.string().optional(),
   align: z.enum(["left", "center", "right"]).optional(),
 });
+
+/** Normalize a text block's `text` to runs. */
+export function textRuns(text: string | TextRun[]): TextRun[] {
+  return typeof text === "string" ? [{ text }] : text;
+}
+
+/** The plain concatenated string of a text block's `text`. */
+export function plainText(text: string | TextRun[]): string {
+  return typeof text === "string" ? text : text.map((r) => r.text).join("");
+}
 
 export type TextBlock = z.infer<typeof TextBlock>;
 

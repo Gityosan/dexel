@@ -48,6 +48,30 @@ describe("renderMarkdown", () => {
     expect(md).toContain("\n---\n");
   });
 
+  it("renders rich text runs (bold / highlight) inline", () => {
+    const d = SlideDeck.parse({
+      slides: [
+        {
+          layout: "title-content",
+          blocks: [
+            {
+              type: "text",
+              variant: "heading",
+              text: [
+                { text: "Plain " },
+                { text: "marked", highlight: "#FFF176", bold: true },
+              ],
+            },
+          ],
+        },
+      ],
+    });
+    expect(renderMarkdown(d)).toContain("<mark style=\"background:#FFF176\">**marked**</mark>");
+    const html = renderHtml(d);
+    expect(html).toContain("font-weight:bold");
+    expect(html).toContain("background:#FFF176");
+  });
+
   it("inlines structured diagrams as SVG", () => {
     const d = SlideDeck.parse({
       slides: [

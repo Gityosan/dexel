@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import pptxgen from "pptxgenjs";
-import type { Block, SlideDeck } from "../ir/index.js";
+import { textRuns, type Block, type SlideDeck } from "../ir/index.js";
 
 // Under NodeNext the default-import *type* of pptxgenjs resolves to the module
 // namespace, while the runtime value is the constructor. Bridge that gap with a
@@ -43,6 +43,21 @@ function nodeHex(
   if (color) return bareHex(themeColor(t, color, t.color.accent));
   if (seriesIndex !== undefined) return seriesHex(t, seriesIndex);
   return undefined;
+}
+
+/** Map rich text runs to pptxgenjs text props (per-run bold/italic/color/highlight). */
+function pptxRuns(text: Parameters<typeof textRuns>[0], t: ThemeTokens) {
+  return textRuns(text).map((r) => ({
+    text: r.text,
+    options: {
+      ...(r.bold ? { bold: true } : {}),
+      ...(r.italic ? { italic: true } : {}),
+      ...(r.color ? { color: bareHex(themeColor(t, r.color, t.color.fg)) } : {}),
+      ...(r.highlight
+        ? { highlight: bareHex(themeColor(t, r.highlight, t.color.accent)) }
+        : {}),
+    },
+  }));
 }
 
 type Pct = `${number}%`;
@@ -201,7 +216,7 @@ function addBlock(
       const alignOpt = block.align ? { align: block.align } : {};
       switch (block.variant) {
         case "heading":
-          slide.addText(block.text, {
+          slide.addText(pptxRuns(block.text, t), {
             ...p,
             valign,
             ...alignOpt,
@@ -213,7 +228,7 @@ function addBlock(
           });
           return;
         case "subheading":
-          slide.addText(block.text, {
+          slide.addText(pptxRuns(block.text, t), {
             ...p,
             valign,
             ...alignOpt,
@@ -224,7 +239,7 @@ function addBlock(
           });
           return;
         default:
-          slide.addText(block.text, {
+          slide.addText(pptxRuns(block.text, t), {
             ...p,
             valign,
             ...alignOpt,

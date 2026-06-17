@@ -80,6 +80,30 @@ describe("renderPptx", () => {
     expect(xml).toContain("<a:t>Beta</a:t>");
   });
 
+  it("renders a highlighted text run natively", async () => {
+    const buf = await renderPptx(
+      SlideDeck.parse({
+        slides: [
+          {
+            layout: "title-content",
+            blocks: [
+              {
+                type: "text",
+                variant: "heading",
+                text: [
+                  { text: "Plain " },
+                  { text: "marked", highlight: "#FFF176" },
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    const xml = await slideXml(buf);
+    expect(xml).toContain("FFF176");
+  });
+
   it("renders a venn diagram as native ellipse shapes", async () => {
     const buf = await renderPptx(
       SlideDeck.parse({

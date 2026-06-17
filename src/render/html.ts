@@ -1,5 +1,6 @@
-import type { Block, SlideDeck } from "../ir/index.js";
+import { textRuns, type Block, type SlideDeck } from "../ir/index.js";
 import { resolveDeck, type ResolvedSlide } from "../layout/index.js";
+import { resolveDeckTheme, themeColor, type ThemeTokens } from "../theme/index.js";
 
 const TOP_LEVEL_HEADING = new Set(["title", "section-divider"]);
 
@@ -18,19 +19,43 @@ export function escapeHtml(s: string): string {
   );
 }
 
-function blockToHtml(block: Block, slide: ResolvedSlide): string {
+/** Render rich text runs to inline HTML with styled spans. */
+function runsToHtml(
+  text: Parameters<typeof textRuns>[0],
+  t: ThemeTokens,
+): string {
+  return textRuns(text)
+    .map((r) => {
+      const inner = escapeHtml(r.text);
+      const styles: string[] = [];
+      if (r.bold) styles.push("font-weight:bold");
+      if (r.italic) styles.push("font-style:italic");
+      if (r.color) styles.push(`color:${themeColor(t, r.color, t.color.fg)}`);
+      if (r.highlight) {
+        styles.push(`background:${themeColor(t, r.highlight, t.color.accent)}`);
+      }
+      return styles.length
+        ? `<span style="${styles.join(";")}">${inner}</span>`
+        : inner;
+    })
+    .join("");
+}
+
+function blockToHtml(block: Block, slide: ResolvedSlide, t: ThemeTokens): string {
   switch (block.type) {
-    case "text":
+    case "text": {
+      const inline = runsToHtml(block.text, t);
       switch (block.variant) {
         case "heading": {
           const tag = TOP_LEVEL_HEADING.has(slide.layout) ? "h1" : "h2";
-          return `<${tag}>${escapeHtml(block.text)}</${tag}>`;
+          return `<${tag}>${inline}</${tag}>`;
         }
         case "subheading":
-          return `<h3>${escapeHtml(block.text)}</h3>`;
+          return `<h3>${inline}</h3>`;
         default:
-          return `<p>${escapeHtml(block.text)}</p>`;
+          return `<p>${inline}</p>`;
       }
+    }
     case "list": {
       const tag = block.ordered ? "ol" : "ul";
       const items = block.items
@@ -83,11 +108,12 @@ function blockToHtml(block: Block, slide: ResolvedSlide): string {
  */
 export function renderHtml(deck: SlideDeck): string {
   const slides = resolveDeck(deck);
+  const t = resolveDeckTheme(deck.theme);
   const body = slides
     .map(
       (slide) =>
         `<section>\n${slide.placements
-          .map((p) => blockToHtml(p.block, slide))
+          .map((p) => blockToHtml(p.block, slide, t))
           .join("\n")}\n</section>`,
     )
     .join("\n<hr>\n");
