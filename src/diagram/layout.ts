@@ -14,6 +14,8 @@ export interface DiagBox {
   seriesIndex?: number;
   /** Explicit color override (theme token name or raw color). */
   color?: string;
+  /** An icon (image data URI / path, or a glyph) drawn at the box's left. */
+  icon?: string;
 }
 
 /** A laid-out connector/axis line, in normalized 0–1 coordinates. */
@@ -59,7 +61,7 @@ const box = (
   w: number,
   h: number,
   label: string,
-  opts: { plain?: boolean; series?: number; color?: string } = {},
+  opts: { plain?: boolean; series?: number; color?: string; icon?: string } = {},
 ): DiagBox => ({
   kind: "box",
   x,
@@ -70,6 +72,7 @@ const box = (
   ...(opts.plain ? { plain: true } : {}),
   ...(opts.series !== undefined ? { seriesIndex: opts.series } : {}),
   ...(opts.color ? { color: opts.color } : {}),
+  ...(opts.icon ? { icon: opts.icon } : {}),
 });
 
 const line = (
@@ -118,7 +121,7 @@ function flow(d: StructuredDiagram): DiagShape[] {
   const laneAbove = Math.max(0.03, y - 0.08);
 
   const boxes: DiagShape[] = d.nodes.map((node, i) =>
-    box(xOf(i), y, bw, bh, node.label, { color: node.color }),
+    box(xOf(i), y, bw, bh, node.label, { color: node.color, icon: node.icon }),
   );
 
   const indexOf = new Map(d.nodes.map((node, i) => [node.id, i]));
@@ -172,10 +175,7 @@ function matrix2x2(d: StructuredDiagram): DiagShape[] {
   ];
   const cells: DiagShape[] = d.nodes.slice(0, 4).map((node, i) => {
     const q = quads[i]!;
-    return box(q.x + inset, q.y + inset, w / 2 - 2 * inset, h / 2 - 2 * inset, node.label, {
-      series: i,
-      color: node.color,
-    });
+    return box(q.x + inset, q.y + inset, w / 2 - 2 * inset, h / 2 - 2 * inset, node.label, { series: i, color: node.color, icon: node.icon });
   });
   return [...axes, ...cells];
 }
@@ -246,7 +246,7 @@ function pyramid(d: StructuredDiagram): DiagShape[] {
   return nodes.map((nd, i) => {
     const w = n === 1 ? wMax : wMin + (wMax - wMin) * (i / (n - 1));
     const y = PAD + i * (rowH + gap);
-    return box((1 - w) / 2, y, w, rowH, nd.label, { series: i, color: nd.color });
+    return box((1 - w) / 2, y, w, rowH, nd.label, { series: i, color: nd.color, icon: nd.icon });
   });
 }
 
@@ -267,7 +267,7 @@ function timeline(d: StructuredDiagram): DiagShape[] {
     const x = clamp(cx - bw / 2, 0, 1 - bw);
     shapes.push(line(cx, axisY, cx, above ? by + bh : by, false));
     const label = nd.date !== undefined ? `${nd.date}\n${nd.label}` : nd.label;
-    shapes.push(box(x, by, bw, bh, label, { color: nd.color }));
+    shapes.push(box(x, by, bw, bh, label, { color: nd.color, icon: nd.icon }));
   });
   return shapes;
 }
@@ -291,7 +291,7 @@ function cycle(d: StructuredDiagram): DiagShape[] {
   }
   d.nodes.forEach((nd, i) => {
     const p = pts[i]!;
-    shapes.push(box(p.x - bw / 2, p.y - bh / 2, bw, bh, nd.label, { series: i, color: nd.color }));
+    shapes.push(box(p.x - bw / 2, p.y - bh / 2, bw, bh, nd.label, { series: i, color: nd.color, icon: nd.icon }));
   });
   return shapes;
 }
@@ -345,7 +345,7 @@ function tree(d: StructuredDiagram): DiagShape[] {
   }
   for (const nd of d.nodes) {
     const b = pos.get(nd.id);
-    if (b) shapes.push(box(b.x, b.y, b.w, b.h, nd.label, { color: nd.color }));
+    if (b) shapes.push(box(b.x, b.y, b.w, b.h, nd.label, { color: nd.color, icon: nd.icon }));
   }
   return shapes;
 }
@@ -390,7 +390,7 @@ function stack(d: StructuredDiagram): DiagShape[] {
   const gap = 0.03;
   const bh = Math.min(0.18, (1 - 2 * PAD - (n - 1) * gap) / n);
   return d.nodes.map((node, i) =>
-    box(PAD, PAD + i * (bh + gap), 1 - 2 * PAD, bh, node.label, { color: node.color }),
+    box(PAD, PAD + i * (bh + gap), 1 - 2 * PAD, bh, node.label, { color: node.color, icon: node.icon }),
   );
 }
 

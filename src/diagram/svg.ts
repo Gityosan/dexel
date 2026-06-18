@@ -48,6 +48,26 @@ interface Ctx {
   t: ThemeTokens;
 }
 
+/** Whether an icon reference is an image (vs. a glyph/emoji to typeset). */
+export function isImageRef(icon: string): boolean {
+  return (
+    icon.startsWith("data:") ||
+    /^https?:\/\//.test(icon) ||
+    /\.(png|jpe?g|svg|gif|webp)(\?|#|$)/i.test(icon)
+  );
+}
+
+function svgIcon(icon: string, x: number, y: number, size: number, bg: string): string {
+  if (isImageRef(icon)) {
+    return `<image href="${escapeXml(icon)}" x="${x}" y="${y}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet"/>`;
+  }
+  const r = size / 2;
+  return (
+    `<circle cx="${x + r}" cy="${y + r}" r="${r}" fill="${bg}"/>` +
+    `<text x="${x + r}" y="${y + r}" fill="${bestOn(bg)}" font-size="${size * 0.55}" text-anchor="middle" dominant-baseline="central">${escapeXml(icon)}</text>`
+  );
+}
+
 function svgBox(b: DiagBox, ctx: Ctx): string {
   const x = b.x * ctx.w;
   const y = b.y * ctx.h;
@@ -56,26 +76,40 @@ function svgBox(b: DiagBox, ctx: Ctx): string {
 
   let rect = "";
   let textColor = ctx.t.color.fg;
+  const filled = shapeFill(ctx.t, b.color, b.seriesIndex);
   if (!b.plain) {
-    const filled = shapeFill(ctx.t, b.color, b.seriesIndex);
     const fill = filled ?? ctx.t.color.bg;
     const stroke = filled ?? ctx.t.color.accent;
     if (filled) textColor = bestOn(filled);
     rect = `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="8" fill="${fill}" stroke="${stroke}" stroke-width="2"/>`;
   }
+
+  if (b.icon) {
+    const size = Math.min(h * 0.62, w * 0.3);
+    const pad = Math.min(12, w * 0.06);
+    const iconSvg = svgIcon(b.icon, x + pad, y + (h - size) / 2, size, ctx.t.color.accent);
+    const textX = x + pad + size + pad;
+    return rect + iconSvg + svgLabel(b.label, textX, y + h / 2, textColor, "start");
+  }
   return rect + svgLabel(b.label, x + w / 2, y + h / 2, textColor);
 }
 
-/** A centered text label, wrapping `\n` into tspans (SVG has no auto line break). */
-function svgLabel(label: string, cx: number, cy: number, fill: string): string {
+/** A text label, wrapping `\n` into tspans (SVG has no auto line break). */
+function svgLabel(
+  label: string,
+  x: number,
+  cy: number,
+  fill: string,
+  anchor: "middle" | "start" = "middle",
+): string {
   const lines = label.split("\n");
-  const open = `<text x="${cx}" y="${cy}" fill="${fill}" font-size="16" text-anchor="middle" dominant-baseline="central">`;
+  const open = `<text x="${x}" y="${cy}" fill="${fill}" font-size="16" text-anchor="${anchor}" dominant-baseline="central">`;
   if (lines.length === 1) return `${open}${escapeXml(label)}</text>`;
   const lh = 18;
   const body = lines
     .map(
       (ln, i) =>
-        `<tspan x="${cx}" dy="${i === 0 ? -((lines.length - 1) / 2) * lh : lh}">${escapeXml(ln)}</tspan>`,
+        `<tspan x="${x}" dy="${i === 0 ? -((lines.length - 1) / 2) * lh : lh}">${escapeXml(ln)}</tspan>`,
     )
     .join("");
   return `${open}${body}</text>`;

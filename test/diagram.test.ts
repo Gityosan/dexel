@@ -45,6 +45,31 @@ describe("renderDiagramSvg", () => {
     expect(svg).toContain(">detail</tspan>");
   });
 
+  it("draws a node icon: a glyph as a circle, an image as <image>", () => {
+    const glyph = renderDiagramSvg(
+      diagram({
+        pattern: "flow",
+        nodes: [
+          { id: "a", label: "A", icon: "★" },
+          { id: "b", label: "B" },
+        ],
+        edges: [{ from: "a", to: "b" }],
+      }),
+    );
+    expect(glyph).toContain("<circle");
+    const img = renderDiagramSvg(
+      diagram({
+        pattern: "flow",
+        nodes: [
+          { id: "a", label: "A", icon: "data:image/png;base64,AAAA" },
+          { id: "b", label: "B" },
+        ],
+        edges: [{ from: "a", to: "b" }],
+      }),
+    );
+    expect(img).toContain("<image");
+  });
+
   it("draws an arrow for flow edges", () => {
     expect(renderDiagramSvg(diagram({}))).toContain("marker-end=\"url(#arrow)\"");
   });

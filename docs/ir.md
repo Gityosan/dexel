@@ -60,7 +60,7 @@ id to bind to).
 ```
 
 ```ts
-DiagramNode = { id, label, group?, value?, level?, date?, parent?, color? }
+DiagramNode = { id, label, group?, value?, level?, date?, parent?, color?, icon? }
 DiagramEdge = { from, to, label? }
 ```
 

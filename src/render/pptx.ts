@@ -10,6 +10,7 @@ type PptxInstance = InstanceType<PptxCtor>;
 type PptxSlide = ReturnType<PptxInstance["addSlide"]>;
 const Pptx = pptxgen as unknown as PptxCtor;
 import {
+  isImageRef,
   layoutDiagram,
   type MermaidOption,
   prerenderMermaid,
@@ -102,11 +103,56 @@ function drawStructuredDiagram(
   for (const s of layoutDiagram(block)) {
     if (s.kind === "box") {
       const series = nodeHex(t, s.color, s.seriesIndex);
+      const textColor = series ? bareHex(bestOn(`#${series}`)) : bareHex(t.color.fg);
+      const bx = rect.x + s.x * rect.w;
+      const by = rect.y + s.y * rect.h;
+      const bw = s.w * rect.w;
+      const bh = s.h * rect.h;
+      if (!s.plain && s.icon) {
+        // Box shape + an icon on the left + left-aligned text in the rest.
+        slide.addShape(shapes.roundRect, {
+          x: pct(bx), y: pct(by), w: pct(bw), h: pct(bh),
+          fill: { color: series ?? bareHex(t.color.bg) },
+          line: { color: series ?? bareHex(t.color.accent), width: 1.5 },
+        });
+        const padIn = Math.min(0.12, bw * canvasIn.w * 0.06);
+        const iconIn = Math.min(bh * canvasIn.h * 0.62, bw * canvasIn.w * 0.3);
+        const ix = bx * canvasIn.w + padIn;
+        const iy = by * canvasIn.h + (bh * canvasIn.h - iconIn) / 2;
+        const accent = bareHex(t.color.accent);
+        if (isImageRef(s.icon)) {
+          slide.addImage({
+            x: ix, y: iy, w: iconIn, h: iconIn,
+            ...(s.icon.startsWith("data:")
+              ? { data: s.icon.replace(/^data:/, "") }
+              : { path: s.icon }),
+            sizing: { type: "contain", w: iconIn, h: iconIn },
+          });
+        } else {
+          slide.addShape(shapes.ellipse, {
+            x: ix, y: iy, w: iconIn, h: iconIn, fill: { color: accent },
+          });
+          slide.addText(s.icon, {
+            x: ix, y: iy, w: iconIn, h: iconIn, align: "center", valign: "middle",
+            color: bareHex(bestOn(t.color.accent)), fontSize: iconIn * 40, fontFace: t.font.body,
+          });
+        }
+        const textXNorm = (ix + iconIn + padIn) / canvasIn.w;
+        slide.addText(s.label, {
+          x: pct(textXNorm),
+          y: pct(by),
+          w: pct(Math.max(0, bx + bw - textXNorm)),
+          h: pct(bh),
+          align: "left", valign: "middle", fit: "shrink",
+          color: textColor, fontSize: 14, fontFace: t.font.body,
+        });
+        continue;
+      }
       slide.addText(s.label, {
-        x: pct(rect.x + s.x * rect.w),
-        y: pct(rect.y + s.y * rect.h),
-        w: pct(s.w * rect.w),
-        h: pct(s.h * rect.h),
+        x: pct(bx),
+        y: pct(by),
+        w: pct(bw),
+        h: pct(bh),
         ...(s.plain
           ? {}
           : {
@@ -114,7 +160,7 @@ function drawStructuredDiagram(
               fill: { color: series ?? bareHex(t.color.bg) },
               line: { color: series ?? bareHex(t.color.accent), width: 1.5 },
             }),
-        color: series ? bareHex(bestOn(`#${series}`)) : bareHex(t.color.fg),
+        color: textColor,
         align: "center",
         valign: "middle",
         fit: "shrink",
