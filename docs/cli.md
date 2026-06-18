@@ -14,6 +14,7 @@ Render a deck JSON file (or `-` for stdin) to a target format.
 | `-o, --out` | output file (text targets default to stdout; binary targets require it) |
 | `--mermaid` | render mermaid diagrams (pdf / pptx) |
 | `--font-body` / `--font-heading` / `--font-mono` | font files to embed (pdf) — overrides the bundled default |
+| `--embed-font` | embed the JP font via @font-face (htmlslides) so it renders anywhere |
 
 > pdf bundles a Noto Sans JP subset and uses it by default, so Japanese renders
 > without any `--font-*` flag. Pass `--font-body` (etc.) for fuller glyph coverage

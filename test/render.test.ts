@@ -181,6 +181,13 @@ describe("renderHtmlSlides", () => {
     expect(html).toContain("background:#FFEE00");
     expect(html).toContain("1 / 1");
   });
+
+  it("embeds the font via @font-face only when requested", () => {
+    expect(html).not.toContain("@font-face");
+    expect(renderHtmlSlides(d, { embedFont: true })).toContain(
+      "@font-face",
+    );
+  });
 });
 
 describe("render dispatch", () => {

@@ -4,6 +4,7 @@ import { consola } from "consola";
 import {
   getLayoutTemplate,
   render as renderText,
+  renderHtmlSlides,
   renderToBuffer,
   SlideDeck,
   supportedLayouts,
@@ -58,6 +59,10 @@ const renderCommand = defineCommand({
       description: "Heading font file to embed (pdf)",
     },
     "font-mono": { type: "string", description: "Mono font file to embed (pdf)" },
+    "embed-font": {
+      type: "boolean",
+      description: "Embed the JP font via @font-face (htmlslides)",
+    },
   },
   async run({ args }) {
     let deck;
@@ -73,7 +78,10 @@ const renderCommand = defineCommand({
     const target = args.target;
 
     if (TEXT_TARGETS.has(target)) {
-      const output = renderText(deck, target as TextTarget);
+      const output =
+        target === "htmlslides"
+          ? renderHtmlSlides(deck, { embedFont: args["embed-font"] })
+          : renderText(deck, target as TextTarget);
       if (args.out) {
         await writeFile(args.out, output);
         consola.success(`Wrote ${target} → ${args.out}`);

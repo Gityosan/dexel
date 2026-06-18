@@ -1,8 +1,19 @@
+import { readFileSync } from "node:fs";
 import { renderDiagramSvg } from "../diagram/index.js";
 import type { Block, SlideDeck, Slot } from "../ir/index.js";
 import { resolveDeck, type ResolvedSlide } from "../layout/index.js";
 import { resolveDeckTheme, themeColor, type ThemeTokens } from "../theme/index.js";
+import { bundledJpFontPath } from "./fonts.js";
 import { escapeHtml, runsToHtml } from "./html.js";
+
+export interface HtmlSlidesOptions {
+  /**
+   * Embed the body font via @font-face so Japanese renders in any browser
+   * (no reliance on a system font). `true` uses the bundled Noto Sans JP subset;
+   * a string is a path to a TTF/OTF. Adds the font (base64) to the HTML.
+   */
+  embedFont?: boolean | string;
+}
 
 /**
  * Render a deck to self-contained **HTML slides**: each slide is a fixed-size
@@ -11,7 +22,10 @@ import { escapeHtml, runsToHtml } from "./html.js";
  * this preserves the slide layout — open it in a browser, or print to PDF (one
  * slide per page). A small inline script shrinks overflowing text to fit.
  */
-export function renderHtmlSlides(deck: SlideDeck): string {
+export function renderHtmlSlides(
+  deck: SlideDeck,
+  opts?: HtmlSlidesOptions,
+): string {
   const t = resolveDeckTheme(deck.theme);
   const px = deck.aspect === "4:3" ? { w: 960, h: 720 } : { w: 1280, h: 720 };
   const slides = resolveDeck(deck);
@@ -23,7 +37,7 @@ export function renderHtmlSlides(deck: SlideDeck): string {
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<style>${css(px, t)}</style>
+<style>${fontFaceCss(t, opts?.embedFont)}${css(px, t)}</style>
 </head>
 <body>
 ${body}
@@ -31,6 +45,19 @@ ${FIT_SCRIPT}
 </body>
 </html>
 `;
+}
+
+/** Optional @font-face embedding the body font (base64) for portability. */
+function fontFaceCss(t: ThemeTokens, embed: boolean | string | undefined): string {
+  if (!embed) return "";
+  const path = typeof embed === "string" ? embed : bundledJpFontPath();
+  if (!path) return "";
+  try {
+    const b64 = readFileSync(path).toString("base64");
+    return `@font-face{font-family:'${t.font.body}';src:url('data:font/ttf;base64,${b64}') format('truetype');font-display:swap}\n`;
+  } catch {
+    return "";
+  }
 }
 
 function css(px: { w: number; h: number }, t: ThemeTokens): string {
