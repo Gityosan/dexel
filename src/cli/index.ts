@@ -14,7 +14,7 @@ import {
 
 const VERSION = "0.0.0";
 
-const TEXT_TARGETS = new Set(["md", "html"]);
+const TEXT_TARGETS = new Set(["md", "html", "htmlslides"]);
 const BINARY_TARGETS = new Set(["pptx", "pdf"]);
 
 async function readInput(path: string): Promise<string> {
@@ -39,7 +39,7 @@ const renderCommand = defineCommand({
     },
     target: {
       type: "string",
-      description: "Output format: md | html | pptx | pdf",
+      description: "Output format: md | html | htmlslides | pptx | pdf",
       alias: "t",
       required: true,
     },
@@ -106,7 +106,7 @@ const renderCommand = defineCommand({
       return;
     }
 
-    consola.error(`Unknown target "${target}". Use md | html | pptx | pdf.`);
+    consola.error(`Unknown target "${target}". Use md | html | htmlslides | pptx | pdf.`);
     process.exitCode = 1;
   },
 });

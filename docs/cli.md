@@ -10,7 +10,7 @@ Render a deck JSON file (or `-` for stdin) to a target format.
 | Flag | Description |
 |---|---|
 | `<input>` | path to the deck JSON, or `-` for stdin |
-| `-t, --target` | `md` \| `html` \| `pptx` \| `pdf` (required) |
+| `-t, --target` | `md` \| `html` \| `htmlslides` \| `pptx` \| `pdf` (required) |
 | `-o, --out` | output file (text targets default to stdout; binary targets require it) |
 | `--mermaid` | render mermaid diagrams (pdf / pptx) |
 | `--font-body` / `--font-heading` / `--font-mono` | font files to embed (pdf) — overrides the bundled default |

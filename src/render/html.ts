@@ -20,7 +20,7 @@ export function escapeHtml(s: string): string {
 }
 
 /** Render rich text runs to inline HTML with styled spans. */
-function runsToHtml(
+export function runsToHtml(
   text: Parameters<typeof textRuns>[0],
   t: ThemeTokens,
 ): string {

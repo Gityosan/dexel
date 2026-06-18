@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { render, renderHtml, renderMarkdown, SlideDeck } from "../src/index.js";
+import {
+  render,
+  renderHtml,
+  renderHtmlSlides,
+  renderMarkdown,
+  SlideDeck,
+} from "../src/index.js";
 
 const deck = SlideDeck.parse({
   theme: "corporate",
@@ -143,6 +149,37 @@ describe("renderHtml", () => {
     const out = renderHtml(d);
     expect(out).toContain("A &amp; B &lt;c&gt;");
     expect(out).not.toContain("<c>");
+  });
+});
+
+describe("renderHtmlSlides", () => {
+  const d = SlideDeck.parse({
+    chrome: { pageNumbers: true },
+    slides: [
+      {
+        layout: "title-content",
+        blocks: [
+          {
+            type: "text",
+            variant: "heading",
+            text: [{ text: "H " }, { text: "hi", highlight: "#FFEE00" }],
+          },
+          { type: "text", variant: "body", text: "body" },
+        ],
+      },
+    ],
+  });
+  const html = renderHtmlSlides(d);
+
+  it("lays out absolutely positioned slots on a fixed-size slide", () => {
+    expect(html).toContain("class=\"slide\"");
+    expect(html).toContain("position:absolute");
+    expect(html).toContain("@page"); // printable to PDF
+  });
+
+  it("renders rich highlight via CSS and a page number", () => {
+    expect(html).toContain("background:#FFEE00");
+    expect(html).toContain("1 / 1");
   });
 });
 

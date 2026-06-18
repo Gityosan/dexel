@@ -1,11 +1,13 @@
 import type { SlideDeck } from "../ir/index.js";
 import { renderHtml } from "./html.js";
+import { renderHtmlSlides } from "./htmlSlides.js";
 import { renderMarkdown } from "./markdown.js";
 import { renderPdf, type PdfOptions } from "./pdf.js";
 import { renderPptx, type PptxOptions } from "./pptx.js";
 
 export * from "./markdown.js";
 export * from "./html.js";
+export * from "./htmlSlides.js";
 export * from "./pptx.js";
 export * from "./pdf.js";
 export * from "./fonts.js";
@@ -13,7 +15,7 @@ export * from "./highlight.js";
 export * from "./geometry.js";
 
 /** Text output targets (synchronous, return a string). */
-export type TextTarget = "md" | "html";
+export type TextTarget = "md" | "html" | "htmlslides";
 /** Binary output targets (asynchronous, return a Buffer). */
 export type BinaryTarget = "pptx" | "pdf";
 export type RenderTarget = TextTarget | BinaryTarget;
@@ -25,6 +27,8 @@ export function render(deck: SlideDeck, target: TextTarget): string {
       return renderMarkdown(deck);
     case "html":
       return renderHtml(deck);
+    case "htmlslides":
+      return renderHtmlSlides(deck);
   }
 }
 

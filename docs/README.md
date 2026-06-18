@@ -43,8 +43,9 @@ SlideDeck (Zod IR)
    │  resolve: blocks → layout-template slots (normalized 0–1 coords)
    ├─ pptx  : native text frames + shapes (EMU)
    ├─ pdf   : drawText + embedded SVG (pt), JP font subsetting
-   ├─ md    : flowOrder demotion (real text + inline SVG)
-   └─ html  : flowOrder demotion (Google Doc paste)
+   ├─ md         : flowOrder demotion (real text + inline SVG)
+   ├─ html       : flowOrder demotion (Google Doc paste)
+   └─ htmlslides : CSS-laid-out 16:9 pages (browser / print-to-PDF)
 ```
 
 All body text stays as real text in every target. Geometry is stored normalized
