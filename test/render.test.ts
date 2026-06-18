@@ -188,6 +188,13 @@ describe("renderHtmlSlides", () => {
       "@font-face",
     );
   });
+
+  it("names Japanese fallback fonts so kanji avoid Chinese glyph forms", () => {
+    expect(html).toContain("Hiragino");
+    expect(html).toContain("Yu Gothic");
+    // primary font still comes first in the stack
+    expect(html).toMatch(/font-family:Noto Sans JP,"Hiragino/);
+  });
 });
 
 describe("render dispatch", () => {

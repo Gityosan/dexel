@@ -60,10 +60,29 @@ function fontFaceCss(t: ThemeTokens, embed: boolean | string | undefined): strin
   }
 }
 
+/**
+ * Font stacks with explicit Japanese fallbacks. Without these, a viewer that
+ * lacks the primary font falls through to the generic `sans-serif`, which on
+ * many systems resolves to a Chinese CJK font (Noto Sans CJK SC) — making kanji
+ * render with Chinese glyph forms. Naming JP system fonts first keeps Japanese
+ * forms even when the bundled/primary font is absent or missing a glyph.
+ */
+const JP_SANS_FALLBACK =
+  '"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic",YuGothic,Meiryo,"MS PGothic",sans-serif';
+const MONO_FALLBACK =
+  '"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace';
+
+function bodyStack(t: ThemeTokens): string {
+  return `${t.font.body},${JP_SANS_FALLBACK}`;
+}
+function monoStack(t: ThemeTokens): string {
+  return `${t.font.mono},${MONO_FALLBACK}`;
+}
+
 function css(px: { w: number; h: number }, t: ThemeTokens): string {
   return `
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#e5e7eb;font-family:${t.font.body},sans-serif;
+body{background:#e5e7eb;font-family:${bodyStack(t)};
 --bg:${t.color.bg};--fg:${t.color.fg};--accent:${t.color.accent};--muted:${t.color.muted};--surface:${t.color.surface};--border:${t.color.border}}
 .slide{position:relative;width:${px.w}px;height:${px.h}px;background:var(--bg);color:var(--fg);
 overflow:hidden;margin:16px auto;box-shadow:0 2px 10px rgba(0,0,0,.25)}
@@ -77,8 +96,8 @@ overflow:hidden;margin:16px auto;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 .kpi b{color:var(--accent)}
 .kpi span{color:var(--muted)}
 ul,ol{padding-left:1.3em}
-pre{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;overflow:auto;font-family:${t.font.mono},monospace}
-.tab{display:inline-block;padding:4px 12px;background:var(--border);border-radius:6px 6px 0 0;font-family:${t.font.mono},monospace;font-size:12px}
+pre{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;overflow:auto;font-family:${monoStack(t)}}
+.tab{display:inline-block;padding:4px 12px;background:var(--border);border-radius:6px 6px 0 0;font-family:${monoStack(t)};font-size:12px}
 .chrome{position:absolute;color:var(--muted);font-size:11px}
 img.block{width:100%;height:100%;object-fit:contain}
 @media print{body{background:#fff}.slide{margin:0;box-shadow:none}@page{size:${px.w}px ${px.h}px;margin:0}}
