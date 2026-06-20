@@ -113,6 +113,18 @@ npm run build     # tsdown → dist/
 npm run check     # publint
 ```
 
+### Previewing slides as PNG
+
+`npm run shot` renders `htmlslides` output in headless Chromium and writes one
+PNG per slide to `shots/` — handy for eyeballing layout and fonts. Needs the
+`puppeteer` dev dependency (bundles Chromium); requires a prior `npm run build`.
+
+```bash
+npm run shot -- deck.json                 # → shots/deck-1.png, deck-2.png, ...
+npm run shot -- a.json b.html --scale 3   # decks and/or pre-rendered HTML, 3x
+npm run shot -- deck.json --embed-font    # embed the JP font (self-contained)
+```
+
 ## Tech stack
 
 TypeScript · Zod v4 (IR) · pptxgenjs (pptx) · pdfkit + fontkit + svg-to-pdfkit

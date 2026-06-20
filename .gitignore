@@ -2,6 +2,7 @@ node_modules/
 dist/
 coverage/
 examples/out/
+shots/
 *.log
 .DS_Store
 .idea/
