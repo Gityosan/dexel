@@ -134,11 +134,13 @@ eslint + prettier.
 
 ### Bundled font
 
-`assets/fonts/noto-sans-jp-subset.ttf` is a subset of **Noto Sans JP** (Latin,
-kana, and the common kanji range), used as the default pdf font so Japanese
-renders without configuration. Licensed under the [SIL Open Font License 1.1](./assets/fonts/OFL.txt).
-For rare glyphs outside the subset, or a different typeface, pass your own font
-via the `pdf.fonts` option / `--font-*` flags.
+`assets/fonts/noto-sans-jp-subset.ttf` is a **Noto Sans JP Regular** subset
+(Latin, kana, and the common kanji range), used as the default pdf font so
+Japanese renders without configuration. Licensed under the
+[SIL Open Font License 1.1](./assets/fonts/OFL.txt). For rare glyphs outside the
+subset, or a different typeface, pass your own font via the `pdf.fonts` option /
+`--font-*` flags. Its name/STAT metadata is normalized by
+`scripts/fix-font-metadata.py` (outlines untouched).
 
 ## Authoring with the builder
 

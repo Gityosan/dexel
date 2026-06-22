@@ -354,32 +354,34 @@ function venn(d: StructuredDiagram): DiagShape[] {
   const op = 0.25;
   const shapes: DiagShape[] = [];
   if (d.nodes.length <= 2) {
+    // Two overlapping lobes filling the box; labels sit in the outer lobes.
     const circles = [
-      { cx: 0.4, cy: 0.5 },
-      { cx: 0.6, cy: 0.5 },
+      { cx: 0.37, cy: 0.5 },
+      { cx: 0.63, cy: 0.5 },
     ];
     const labels = [
-      { x: 0.08, y: 0.42 },
-      { x: 0.72, y: 0.42 },
+      { x: 0.04, y: 0.43 },
+      { x: 0.72, y: 0.43 },
     ];
     d.nodes.slice(0, 2).forEach((nd, i) => {
-      shapes.push(ellipse(circles[i]!.cx, circles[i]!.cy, 0.27, 0.27, op, i, nd.color));
-      shapes.push(box(labels[i]!.x, labels[i]!.y, 0.2, 0.16, nd.label, { plain: true }));
+      shapes.push(ellipse(circles[i]!.cx, circles[i]!.cy, 0.32, 0.36, op, i, nd.color));
+      shapes.push(box(labels[i]!.x, labels[i]!.y, 0.24, 0.14, nd.label, { plain: true }));
     });
   } else {
+    // Three circles in a triangle, filling the box; labels in the outer lobes.
     const circles = [
-      { cx: 0.5, cy: 0.36 },
-      { cx: 0.37, cy: 0.62 },
-      { cx: 0.63, cy: 0.62 },
+      { cx: 0.5, cy: 0.33 },
+      { cx: 0.33, cy: 0.64 },
+      { cx: 0.67, cy: 0.64 },
     ];
     const labels = [
-      { x: 0.4, y: 0.08 },
-      { x: 0.1, y: 0.72 },
-      { x: 0.7, y: 0.72 },
+      { x: 0.38, y: 0.03 },
+      { x: 0.05, y: 0.82 },
+      { x: 0.71, y: 0.82 },
     ];
     d.nodes.slice(0, 3).forEach((nd, i) => {
-      shapes.push(ellipse(circles[i]!.cx, circles[i]!.cy, 0.25, 0.25, op, i, nd.color));
-      shapes.push(box(labels[i]!.x, labels[i]!.y, 0.2, 0.14, nd.label, { plain: true }));
+      shapes.push(ellipse(circles[i]!.cx, circles[i]!.cy, 0.3, 0.3, op, i, nd.color));
+      shapes.push(box(labels[i]!.x, labels[i]!.y, 0.24, 0.14, nd.label, { plain: true }));
     });
   }
   return shapes;
