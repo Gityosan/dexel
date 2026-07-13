@@ -139,8 +139,9 @@ eslint + prettier.
 Japanese renders without configuration. Licensed under the
 [SIL Open Font License 1.1](./assets/fonts/OFL.txt). For rare glyphs outside the
 subset, or a different typeface, pass your own font via the `pdf.fonts` option /
-`--font-*` flags. Its name/STAT metadata is normalized by
-`scripts/fix-font-metadata.py` (outlines untouched).
+`--font-*` flags. Its name/STAT metadata is normalized by `npm run fix-font`
+(`scripts/fix-font-metadata.ts`, a dependency-free SFNT patcher; outlines
+untouched).
 
 ## Authoring with the builder
 

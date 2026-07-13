@@ -15,13 +15,13 @@ dexel render examples/sample-deck.json -t pdf  -o /tmp/deck.pdf --mermaid
 > exist, so they render dexel's gray **placeholder** — swap in your own image
 > paths (or data URIs) to see real images.
 
-## `builder.mjs`
+## `builder.ts`
 
 The same deck built programmatically with the stateful builder API:
 
 ```bash
 npm run build
-node examples/builder.mjs        # writes examples/out/deck.{md,html,pptx,pdf}
+npm run example        # writes examples/out/deck.{md,html,pptx,pdf}
 ```
 
 `examples/out/` is git-ignored.

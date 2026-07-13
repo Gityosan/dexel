@@ -35,8 +35,9 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "check": "publint",
-    "example": "node examples/builder.mjs",
-    "shot": "node scripts/shot.mjs"
+    "example": "unrun examples/builder.ts",
+    "shot": "unrun scripts/shot.ts",
+    "fix-font": "unrun scripts/fix-font-metadata.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
