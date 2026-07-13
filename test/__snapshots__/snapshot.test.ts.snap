@@ -1,0 +1,133 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`output snapshots > renders a funnel diagram to SVG 1`] = `"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450" color="#989898"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="currentColor"/></marker></defs><polygon points="48,27 752,27 636.8000000000001,159 163.20000000000002,159" fill="#2563EB" stroke="#FFFFFF" stroke-width="1"/><text x="400" y="93" fill="#FFFFFF" font-size="16" text-anchor="middle" dominant-baseline="central">Leads (100)</text><polygon points="163.20000000000002,159 636.8000000000001,159 536,291 264,291" fill="#16A34A" stroke="#FFFFFF" stroke-width="1"/><text x="400" y="225" fill="#111111" font-size="16" text-anchor="middle" dominant-baseline="central">Qualified (60)</text><polygon points="264,291 536,291 536,423 264,423" fill="#F59E0B" stroke="#FFFFFF" stroke-width="1"/><text x="400" y="357" fill="#111111" font-size="16" text-anchor="middle" dominant-baseline="central">Won (25)</text></svg>"`;
+
+exports[`output snapshots > renders a venn diagram to SVG 1`] = `"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450" color="#989898"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="currentColor"/></marker></defs><ellipse cx="296" cy="225" rx="256" ry="162" fill="#2563EB" fill-opacity="0.25" stroke="#2563EB" stroke-width="2"/><text x="128" y="225" fill="#1A1A1A" font-size="16" text-anchor="middle" dominant-baseline="central">A</text><ellipse cx="504" cy="225" rx="256" ry="162" fill="#16A34A" fill-opacity="0.25" stroke="#16A34A" stroke-width="2"/><text x="672" y="225" fill="#1A1A1A" font-size="16" text-anchor="middle" dominant-baseline="central">B</text></svg>"`;
+
+exports[`output snapshots > renders the deck to HTML 1`] = `
+"<!doctype html>
+<html>
+<body>
+<section>
+<h1>Dexel デモ</h1>
+<h3>2026 Q3</h3>
+</section>
+<hr>
+<section>
+<h2>概要</h2>
+<ul>
+  <li>ポイント1</li>
+  <li>詳細</li>
+</ul>
+</section>
+<hr>
+<section>
+<h2>指標</h2>
+<p><strong>99%</strong> Uptime</p>
+<p><strong>12ms</strong> p50 <small>median</small></p>
+</section>
+<hr>
+<section>
+<h2>比較</h2>
+<h3>案A</h3>
+<p>速い</p>
+<h3>案B</h3>
+<p>安い</p>
+</section>
+<hr>
+<section>
+<p>シンプルさは究極の洗練。</p>
+<h3>— Da Vinci</h3>
+</section>
+<hr>
+<section>
+<h2>特徴</h2>
+<p>1ソース</p>
+<p>複数形式</p>
+<p>実テキスト</p>
+</section>
+<hr>
+<section>
+<h2>使い方</h2>
+<pre style="padding:12px;background:#f6f8fa;border:1px solid #e1e4e8;border-radius:6px;overflow:auto"><code class="language-ts">render(deck, &quot;md&quot;);</code></pre>
+</section>
+<hr>
+<section>
+<h2>フロー</h2>
+<p><strong>[diagram: flow]</strong></p>
+<ul>
+  <li>入力</li>
+  <li>変換</li>
+  <li>出力</li>
+  <li>a → b</li>
+  <li>b → c</li>
+</ul>
+</section>
+</body>
+</html>
+"
+`;
+
+exports[`output snapshots > renders the deck to Markdown 1`] = `
+"# Dexel デモ
+
+### 2026 Q3
+
+---
+
+## 概要
+
+- ポイント1
+  - 詳細
+
+---
+
+## 指標
+
+**99%** Uptime
+
+**12ms** p50 — median
+
+---
+
+## 比較
+
+### 案A
+
+速い
+
+### 案B
+
+安い
+
+---
+
+シンプルさは究極の洗練。
+
+### — Da Vinci
+
+---
+
+## 特徴
+
+1ソース
+
+複数形式
+
+実テキスト
+
+---
+
+## 使い方
+
+\`\`\`ts
+render(deck, "md");
+\`\`\`
+
+---
+
+## フロー
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450" color="#919AA6"><defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L8,3 L0,6 Z" fill="currentColor"/></marker></defs><line x1="253.33333333333331" y1="225" x2="285.33333333333337" y2="225" stroke="#919AA6" stroke-width="2" marker-end="url(#arrow)"/><line x1="514.6666666666666" y1="225" x2="546.6666666666666" y2="225" stroke="#919AA6" stroke-width="2" marker-end="url(#arrow)"/><rect x="24" y="130.50000000000003" width="229.33333333333334" height="189" rx="8" fill="#FFFFFF" stroke="#1D4ED8" stroke-width="2"/><text x="138.66666666666669" y="225.00000000000003" fill="#0B1F3A" font-size="16" text-anchor="middle" dominant-baseline="central">入力</text><rect x="285.33333333333337" y="130.50000000000003" width="229.33333333333334" height="189" rx="8" fill="#FFFFFF" stroke="#1D4ED8" stroke-width="2"/><text x="400.00000000000006" y="225.00000000000003" fill="#0B1F3A" font-size="16" text-anchor="middle" dominant-baseline="central">変換</text><rect x="546.6666666666666" y="130.50000000000003" width="229.33333333333334" height="189" rx="8" fill="#FFFFFF" stroke="#1D4ED8" stroke-width="2"/><text x="661.3333333333333" y="225.00000000000003" fill="#0B1F3A" font-size="16" text-anchor="middle" dominant-baseline="central">出力</text></svg>
+"
+`;

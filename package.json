@@ -1,0 +1,78 @@
+{
+  "name": "dexel",
+  "version": "0.0.0",
+  "description": "One structured definition → multiple slide formats (pptx / pdf / md / Google Doc). Builder-style deck authoring designed for LLMs via MCP.",
+  "type": "module",
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./mcp": {
+      "types": "./dist/mcp/server.d.mts",
+      "import": "./dist/mcp/server.mjs"
+    }
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "bin": {
+    "dexel": "./dist/cli/run.mjs",
+    "dexel-mcp": "./dist/mcp/stdio.mjs"
+  },
+  "files": [
+    "dist",
+    "assets"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "check": "publint",
+    "example": "unrun examples/builder.ts",
+    "shot": "unrun scripts/shot.ts",
+    "fix-font": "unrun scripts/fix-font-metadata.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "c12": "4.0.0-beta.4",
+    "citty": "0.2.2",
+    "consola": "3.4.2",
+    "es-toolkit": "1.45.1",
+    "jsdom": "^29.1.1",
+    "log-update": "7.2.0",
+    "mermaid": "^11.15.0",
+    "pdfkit": "^0.19.1",
+    "pptxgenjs": "^4.0.1",
+    "shiki": "^4.2.0",
+    "svg-to-pdfkit": "^0.1.8",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "5.10.0",
+    "@types/jsdom": "^28.0.3",
+    "@types/node": "25.4.0",
+    "@types/pdfkit": "^0.17.6",
+    "@typescript-eslint/eslint-plugin": "8.59.4",
+    "@typescript-eslint/parser": "8.59.4",
+    "eslint": "10.0.3",
+    "fast-check": "4.8.0",
+    "jszip": "^3.10.1",
+    "prettier": "3.8.1",
+    "publint": "0.3.21",
+    "puppeteer": "^23.11.1",
+    "tsdown": "0.22.0",
+    "typescript": "6.0.3",
+    "unrun": "0.3.0",
+    "vitest": "4.0.18"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

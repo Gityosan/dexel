@@ -1,0 +1,283 @@
+{
+  "theme": "corporate",
+  "aspect": "16:9",
+  "meta": { "title": "dexel デモデッキ", "author": "dexel", "date": "2026-06-15" },
+  "chrome": { "pageNumbers": true, "footer": "© dexel 2026" },
+  "slides": [
+    {
+      "layout": "title",
+      "notes": "オープニング。1ソースから複数形式へ。",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "dexel デモ" },
+        { "type": "text", "variant": "subheading", "text": "1ソース → pptx / pdf / md / Google Doc" },
+        { "type": "text", "variant": "body", "slot": "meta", "text": "2026-06-15 ・ dexel" }
+      ]
+    },
+    {
+      "layout": "agenda",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "アジェンダ" },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [
+            { "text": "コンセプト" },
+            { "text": "レイアウト" },
+            { "text": "ダイアグラム" },
+            { "text": "出力" }
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "section-divider",
+      "blocks": [{ "type": "text", "variant": "heading", "text": "1. レイアウト" }]
+    },
+    {
+      "layout": "title-content",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "title-content" },
+        { "type": "text", "variant": "body", "text": "見出し + 本文。最頻出のレイアウト。" }
+      ]
+    },
+    {
+      "layout": "two-column",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "two-column" },
+        { "type": "text", "variant": "body", "slot": "left", "text": "左カラム" },
+        { "type": "text", "variant": "body", "slot": "right", "text": "右カラム" }
+      ]
+    },
+    {
+      "layout": "bullet-list",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "bullet-list" },
+        { "type": "text", "variant": "body", "slot": "lead", "text": "リード文 + 箇条書き。" },
+        {
+          "type": "list",
+          "slot": "bullets",
+          "items": [
+            { "text": "ポイント1" },
+            { "text": "ネスト", "level": 1 },
+            { "text": "ポイント2" }
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "comparison",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "comparison" },
+        { "type": "text", "variant": "subheading", "slot": "leftTitle", "text": "Before" },
+        { "type": "text", "variant": "body", "slot": "left", "text": "手作業" },
+        { "type": "text", "variant": "subheading", "slot": "rightTitle", "text": "After" },
+        { "type": "text", "variant": "body", "slot": "right", "text": "自動化" }
+      ]
+    },
+    {
+      "layout": "kpi-highlight",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "kpi-highlight" },
+        { "type": "kpi", "value": "4", "label": "出力形式" },
+        { "type": "kpi", "value": "17", "label": "レイアウト" },
+        { "type": "kpi", "value": "13", "label": "ダイアグラム" }
+      ]
+    },
+    {
+      "layout": "quote",
+      "blocks": [
+        { "type": "text", "variant": "body", "slot": "quote", "text": "シンプルさは究極の洗練である。" },
+        { "type": "text", "variant": "subheading", "slot": "attribution", "text": "— Leonardo da Vinci" }
+      ]
+    },
+    {
+      "layout": "image-caption",
+      "notes": "存在しない画像パスはグレーのプレースホルダになる。",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "image-caption" },
+        { "type": "image", "slot": "image", "src": "./assets/screenshot.png", "alt": "スクリーンショット" },
+        { "type": "text", "variant": "body", "slot": "caption", "text": "画像 + キャプション(欠損時はプレースホルダ)" }
+      ]
+    },
+    {
+      "layout": "grid-cards",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "grid-cards" },
+        { "type": "text", "variant": "body", "text": "実テキスト" },
+        { "type": "text", "variant": "body", "text": "正規化座標" },
+        { "type": "text", "variant": "body", "text": "テーマトークン" },
+        { "type": "text", "variant": "body", "text": "MCP ビルダー" }
+      ]
+    },
+    {
+      "layout": "toc",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "目次 (toc)" },
+        {
+          "type": "list",
+          "ordered": true,
+          "items": [{ "text": "レイアウト" }, { "text": "ダイアグラム" }, { "text": "出力" }]
+        }
+      ]
+    },
+    {
+      "layout": "full-bleed",
+      "blocks": [
+        { "type": "image", "src": "./assets/cover.jpg", "alt": "カバー画像" },
+        { "type": "text", "variant": "heading", "text": "full-bleed オーバーレイ" }
+      ]
+    },
+    {
+      "layout": "section-divider",
+      "blocks": [{ "type": "text", "variant": "heading", "text": "2. ダイアグラム" }]
+    },
+    {
+      "layout": "process-steps",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "process-steps (flow)" },
+        {
+          "type": "diagram",
+          "kind": "structured",
+          "pattern": "flow",
+          "slot": "steps",
+          "nodes": [
+            { "id": "ir", "label": "IR" },
+            { "id": "engine", "label": "Layout Engine" },
+            { "id": "render", "label": "Renderers" }
+          ],
+          "edges": [
+            { "from": "ir", "to": "engine" },
+            { "from": "engine", "to": "render" }
+          ]
+        }
+      ]
+    },
+    {
+      "layout": "timeline",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "timeline" },
+        {
+          "type": "diagram",
+          "kind": "structured",
+          "pattern": "timeline",
+          "slot": "timeline",
+          "nodes": [
+            { "id": "q1", "label": "MVP", "date": "2026-Q1" },
+            { "id": "q2", "label": "ダイアグラム", "date": "2026-Q2" },
+            { "id": "q3", "label": "テーマ", "date": "2026-Q3" }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "layout": "content-diagram",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "content-diagram" },
+        { "type": "text", "variant": "body", "text": "見出し + リード文 + 図を1枚に。" },
+        {
+          "type": "diagram",
+          "kind": "structured",
+          "pattern": "cycle",
+          "slot": "diagram",
+          "nodes": [
+            { "id": "p", "label": "Plan" },
+            { "id": "d", "label": "Do" },
+            { "id": "c", "label": "Check" },
+            { "id": "a", "label": "Act" }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "layout": "title-content",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "funnel" },
+        {
+          "type": "diagram",
+          "kind": "structured",
+          "pattern": "funnel",
+          "orientation": "horizontal",
+          "slot": "body",
+          "nodes": [
+            { "id": "a", "label": "訪問", "value": 1000 },
+            { "id": "b", "label": "登録", "value": 400 },
+            { "id": "c", "label": "課金", "value": 80, "color": "#16A34A" }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "layout": "title-content",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "matrix-2x2" },
+        {
+          "type": "diagram",
+          "kind": "structured",
+          "pattern": "matrix-2x2",
+          "slot": "body",
+          "nodes": [
+            { "id": "s", "label": "Strengths" },
+            { "id": "w", "label": "Weaknesses" },
+            { "id": "o", "label": "Opportunities" },
+            { "id": "t", "label": "Threats" }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "layout": "title-content",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "org-tree" },
+        {
+          "type": "diagram",
+          "kind": "structured",
+          "pattern": "org-tree",
+          "slot": "body",
+          "nodes": [
+            { "id": "ceo", "label": "CEO" },
+            { "id": "eng", "label": "Eng", "parent": "ceo" },
+            { "id": "sales", "label": "Sales", "parent": "ceo" },
+            { "id": "fe", "label": "FE", "parent": "eng" }
+          ],
+          "edges": []
+        }
+      ]
+    },
+    {
+      "layout": "title-content",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "mermaid (--mermaid)" },
+        {
+          "type": "diagram",
+          "kind": "mermaid",
+          "slot": "body",
+          "source": "sequenceDiagram\n  Claude->>dexel: add_section\n  dexel-->>Claude: deckSummary"
+        }
+      ]
+    },
+    {
+      "layout": "code",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "code" },
+        {
+          "type": "code",
+          "language": "ts",
+          "filename": "deck.ts",
+          "code": "import { createDeck } from \"dexel\";\nconst deck = createDeck({ theme: \"corporate\" });"
+        }
+      ]
+    },
+    {
+      "layout": "code-explain",
+      "blocks": [
+        { "type": "text", "variant": "heading", "text": "code-explain" },
+        { "type": "code", "slot": "code", "language": "ts", "code": "deck.render(\"md\");" },
+        { "type": "text", "variant": "body", "slot": "explain", "text": "左にコード、右に解説。" }
+      ]
+    }
+  ]
+}
